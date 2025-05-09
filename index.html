@@ -172,35 +172,27 @@
           ctx.fillStyle = fillColor;
           ctx.fillRect(0, 0, w, h);
         } else if (fitMode === 'fit-blur') {
-  const blurStyle = document.getElementById('blurFillMode').value;
-  ctx.save();
-  ctx.filter = 'blur(20px)';
+          const blurStyle = document.getElementById('blurFillMode').value;
+          ctx.save();
+          ctx.filter = 'blur(20px)';
 
-  if (blurStyle === 'tile') {
-    const pattern = ctx.createPattern(img, 'repeat');
-    ctx.fillStyle = pattern;
-    ctx.fillRect(0, 0, w, h);
-  } else if (blurStyle === 'stretch') {
-    ctx.drawImage(img, 0, 0, w, h);
-  } else {
-    const scale = Math.max(w / img.width, h / img.height);
-    const bgW = img.width * scale;
-    const bgH = img.height * scale;
-    const bgX = (w - bgW) / 2;
-    const bgY = (h - bgH) / 2;
-    ctx.drawImage(img, bgX, bgY, bgW, bgH);
-  }
+          if (blurStyle === 'tile') {
+            const pattern = ctx.createPattern(img, 'repeat');
+            ctx.fillStyle = pattern;
+            ctx.fillRect(0, 0, w, h);
+          } else if (blurStyle === 'stretch') {
+            ctx.drawImage(img, 0, 0, w, h);
+          } else {
+            const scale = Math.max(w / img.width, h / img.height);
+            const bgW = img.width * scale;
+            const bgH = img.height * scale;
+            const bgX = (w - bgW) / 2;
+            const bgY = (h - bgH) / 2;
+            ctx.drawImage(img, bgX, bgY, bgW, bgH);
+          }
 
-  ctx.restore();
-} else if (blurStyle === 'stretch') {
-    ctx.drawImage(img, 0, 0, w, h);
-  } else {
-    ctx.drawImage(img, 0, 0, w, h);
-    ctx.filter = 'blur(20px)';
-    ctx.drawImage(canvas, 0, 0);
-    ctx.filter = 'none';
-  }
-}
+          ctx.restore();
+        }
 
         const scale = fitMode === 'crop' ? Math.max(w / img.width, h / img.height) : Math.min(w / img.width, h / img.height);
         const imgW = img.width * scale;
@@ -264,6 +256,7 @@
   </script>
 </body>
 </html>
+
 
 
 
