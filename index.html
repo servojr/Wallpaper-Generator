@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Desktop Wallpaper Generator</title>
+  <title>Wallpaper Generator</title>
   <style>
     body {
       margin: 0;
@@ -55,22 +55,22 @@
   </style>
 </head>
 <body>
-  <h1>🖼️ My Desktop Wallpaper Generator</h1>
+  <h1>🖼️ Wallpaper Generator</h1>
   <form>
-    <label>Upload Image:</label>
+    <label for="imageUpload">Upload Image:</label>
     <input type="file" id="imageUpload" accept="image/*">
 
-    <label>Affirmation Text:</label>
+    <label for="affirmationText">Affirmation Text:</label>
     <input type="text" id="affirmationText">
 
-    <label>Affirmation Position:</label>
+    <label for="affirmationPosition">Affirmation Position:</label>
     <select id="affirmationPosition">
       <option value="top">Top</option>
       <option value="center">Center</option>
       <option value="bottom" selected>Bottom</option>
     </select>
 
-    <label>Wallpaper Size:</label>
+    <label for="sizeSelect">Wallpaper Size:</label>
     <select id="sizeSelect">
       <option value="1024x768">1024×768</option>
       <option value="1280x1024">1280×1024</option>
@@ -93,16 +93,12 @@
       <option value="center" selected>Center</option>
       <option value="bottom">Bottom</option>
     </select>
-      <option value="png" selected>PNG</option>
-      <option value="jpeg">JPEG</option>
-      <option value="webp">WEBP</option>
-    </select>
 
     <label>Optional Effects:</label>
-    <div style="display: flex; flex-direction: column; gap: 10px;">
-      <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"><span>Black & White</span></div>
-      <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"><span>Blur</span></div>
-      <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"><span>Invert Colors</span></div>
+    <div style="display: flex; flex-direction: column; gap: 8px;">
+      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"> Black & White</label>
+      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"> Blur</label>
+      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"> Invert Colors</label>
     </div>
 
     <button type="button" id="generateBtn">Create Wallpaper</button>
@@ -120,6 +116,7 @@
     const affirmationPosition = document.getElementById('affirmationPosition');
     const sizeSelect = document.getElementById('sizeSelect');
     const formatSelect = document.getElementById('formatSelect');
+    const imagePosition = document.getElementById('imagePosition');
     const generateBtn = document.getElementById('generateBtn');
     const downloadLink = document.getElementById('downloadLink');
     const preview = document.getElementById('preview');
@@ -138,12 +135,12 @@
       if (!blobUrl) return alert("Please upload an image first.");
       const [w, h] = sizeSelect.value.split('x').map(Number);
       const format = formatSelect.value;
+      const position = imagePosition.value;
       canvas.width = w;
       canvas.height = h;
 
       const img = new Image();
       img.onload = () => {
-        const position = document.getElementById('imagePosition').value;
         const scale = Math.max(w / img.width, h / img.height);
         const imgW = img.width * scale;
         const imgH = img.height * scale;
@@ -211,4 +208,5 @@
   </script>
 </body>
 </html>
+
 
