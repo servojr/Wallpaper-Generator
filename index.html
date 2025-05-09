@@ -88,7 +88,7 @@
     </select>
 
     <label>Optional Effects:</label>
-    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+    <div style="display: flex; flex-direction: column; gap: 5px; align-items: flex-start;">
       <label><input type="checkbox" id="desaturate"> Black & White</label>
       <label><input type="checkbox" id="blur"> Blur</label>
       <label><input type="checkbox" id="invert"> Invert Colors</label>
@@ -99,7 +99,24 @@
   </form>
 
   <img id="preview">
-  <canvas id="canvas" width="1024" height="768"></canvas>
+  <div id="canvasContainer">
+    <div id="canvasWrapper">
+      <canvas id="canvas" width="1024" height="768"></canvas>
+    </div>
+  </div>
+
+  <style>
+    #canvasContainer {
+      position: relative;
+      overflow: hidden;
+      max-width: 100%;
+      margin-bottom: 20px;
+    }
+    #canvasWrapper {
+      position: absolute;
+      cursor: grab;
+    }
+  </style>
 
   <script>
     const canvas = document.getElementById('canvas');
@@ -132,6 +149,9 @@
 
       const img = new Image();
       img.onload = () => {
+        const wrapper = document.getElementById('canvasWrapper');
+        wrapper.style.left = '0px';
+        wrapper.style.top = '0px';
         const scale = Math.max(w / img.width, h / img.height);
         const imgW = img.width * scale;
         const imgH = img.height * scale;
@@ -193,9 +213,64 @@
       };
       img.src = blobUrl;
     });
-  </script>
+  // draggable canvas logic
+    const wrapper = document.getElementById('canvasWrapper');
+    let isDragging = false;
+    let startX, startY;
+
+    wrapper.addEventListener('mousedown', e => {
+      isDragging = true;
+      startX = e.clientX - wrapper.offsetLeft;
+      startY = e.clientY - wrapper.offsetTop;
+      wrapper.style.cursor = 'grabbing';
+    });
+
+    window.addEventListener('mousemove', e => {
+      if (!isDragging) return;
+      wrapper.style.left = `${e.clientX - startX}px`;
+      wrapper.style.top = `${e.clientY - startY}px`;
+    });
+
+    window.addEventListener('mouseup', () => {
+      isDragging = false;
+      wrapper.style.cursor = 'grab';
+    });
+
+    // Preset style buttons
+    const stylePresets = [
+      { name: 'Dreamy', filter: 'blur(2px) brightness(1.2) saturate(1.2)' },
+      { name: 'Grunge', filter: 'contrast(1.2) grayscale(0.5)' },
+      { name: 'Cinematic', filter: 'brightness(0.9) contrast(1.4)' }
+    ];
+
+    const presetContainer = document.createElement('div');
+    presetContainer.style.display = 'flex';
+    presetContainer.style.flexWrap = 'wrap';
+    presetContainer.style.gap = '10px';
+    presetContainer.style.margin = '10px 0';
+
+    stylePresets.forEach(preset => {
+      const btn = document.createElement('button');
+      btn.textContent = preset.name;
+      btn.style.padding = '6px 12px';
+      btn.style.borderRadius = '4px';
+      btn.style.border = 'none';
+      btn.style.background = '#eee';
+      btn.style.cursor = 'pointer';
+      btn.onclick = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.filter = preset.filter;
+        ctx.drawImage(img, x, y, imgW, imgH);
+        ctx.filter = 'none';
+      };
+      presetContainer.appendChild(btn);
+    });
+
+    document.querySelector('form').appendChild(presetContainer);
+</script>
 </body>
 </html>
+
 
 
 
