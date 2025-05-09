@@ -87,6 +87,13 @@
       <option value="webp">WEBP</option>
     </select>
 
+    <label>Optional Effects:</label>
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+      <label><input type="checkbox" id="desaturate"> Black & White</label>
+      <label><input type="checkbox" id="blur"> Blur</label>
+      <label><input type="checkbox" id="invert"> Invert Colors</label>
+    </div>
+
     <button type="button" id="generateBtn">Create Wallpaper</button>
     <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
   </form>
@@ -134,6 +141,38 @@
         ctx.clearRect(0, 0, w, h);
         ctx.drawImage(img, x, y, imgW, imgH);
 
+        const desaturate = document.getElementById('desaturate').checked;
+        const blur = document.getElementById('blur').checked;
+        const invert = document.getElementById('invert').checked;
+
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let data = imageData.data;
+
+        if (desaturate) {
+          for (let i = 0; i < data.length; i += 4) {
+            const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+            data[i] = data[i+1] = data[i+2] = avg;
+          }
+        }
+
+        if (invert) {
+          for (let i = 0; i < data.length; i += 4) {
+            data[i] = 255 - data[i];
+            data[i+1] = 255 - data[i+1];
+            data[i+2] = 255 - data[i+2];
+          }
+        }
+
+        if (desaturate || invert) {
+          ctx.putImageData(imageData, 0, 0);
+        }
+
+        if (blur) {
+          ctx.filter = 'blur(2px)';
+          ctx.drawImage(canvas, 0, 0);
+          ctx.filter = 'none';
+        }
+
         const text = affirmationText.value;
         if (text) {
           const pos = affirmationPosition.value;
@@ -157,6 +196,7 @@
   </script>
 </body>
 </html>
+
 
 
 
