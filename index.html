@@ -124,6 +124,187 @@
 
   <img id="preview">
   <canvas id="canvas" width="1024" height="768"></canvas>
+<script>
+let currentImage = null;
+let originalImageSrc = null;
+let dragOffset = { x: 0, y: 0 };
+let dragPosition = { x: 0, y: 0 };
+let isDragging = false;
+
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+const imageUpload = document.getElementById('imageUpload');
+const affirmationText = document.getElementById('affirmationText');
+const affirmationPosition = document.getElementById('affirmationPosition');
+const sizeSelect = document.getElementById('sizeSelect');
+const formatSelect = document.getElementById('formatSelect');
+const generateBtn = document.getElementById('generateBtn');
+const downloadLink = document.getElementById('downloadLink');
+const fitModeSelect = document.getElementById('fitMode');
+const blurFillMode = document.getElementById('blurFillMode');
+const fillColorPicker = document.getElementById('fillColor');
+
+// Show/hide background fill options
+fitModeSelect.addEventListener('change', () => {
+  const mode = fitModeSelect.value;
+  document.getElementById('blurFillMode').style.display = mode === 'fit-blur' ? 'block' : 'none';
+  document.getElementById('blurFillModeLabel').style.display = mode === 'fit-blur' ? 'block' : 'none';
+  fillColorPicker.style.display = mode === 'fit-color' ? 'block' : 'none';
+  document.getElementById('fillColorLabel').style.display = mode === 'fit-color' ? 'block' : 'none';
+});
+
+imageUpload.addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = event => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      originalImageSrc = event.target.result;
+      dragPosition = { x: 0, y: 0 };
+      drawWallpaper();
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+canvas.addEventListener('mousedown', e => {
+  isDragging = true;
+  dragOffset.x = e.offsetX - dragPosition.x;
+  dragOffset.y = e.offsetY - dragPosition.y;
+});
+canvas.addEventListener('mouseup', () => { isDragging = false; });
+canvas.addEventListener('mouseleave', () => { isDragging = false; });
+canvas.addEventListener('mousemove', e => {
+  if (isDragging && currentImage) {
+    dragPosition.x = e.offsetX - dragOffset.x;
+    dragPosition.y = e.offsetY - dragOffset.y;
+    drawWallpaper();
+  }
+});
+
+function drawWallpaper() {
+  if (!currentImage) return;
+  const [w, h] = sizeSelect.value.split('x').map(Number);
+  canvas.width = w;
+  canvas.height = h;
+  ctx.clearRect(0, 0, w, h);
+
+  const fitMode = fitModeSelect.value;
+  const fillColor = fillColorPicker.value;
+
+  if (fitMode === 'fit-color') {
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(0, 0, w, h);
+  } else if (fitMode === 'fit-blur') {
+    ctx.save();
+    ctx.filter = 'blur(20px)';
+    const style = blurFillMode.value;
+    if (style === 'tile') {
+      const pattern = ctx.createPattern(currentImage, 'repeat');
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, w, h);
+    } else if (style === 'stretch') {
+      ctx.drawImage(currentImage, 0, 0, w, h);
+    } else {
+      const scale = Math.max(w / currentImage.width, h / currentImage.height);
+      const iw = currentImage.width * scale;
+      const ih = currentImage.height * scale;
+      const ix = (w - iw) / 2;
+      const iy = (h - ih) / 2;
+      ctx.drawImage(currentImage, ix, iy, iw, ih);
+    }
+    ctx.restore();
+  }
+
+  const scale = Math.min(w / currentImage.width, h / currentImage.height);
+  const imgW = currentImage.width * scale;
+  const imgH = currentImage.height * scale;
+
+  ctx.drawImage(currentImage, dragPosition.x, dragPosition.y, imgW, imgH);
+
+  // Optional effects
+  let imageData = ctx.getImageData(0, 0, w, h);
+  const data = imageData.data;
+  if (document.getElementById('desaturate').checked) {
+    for (let i = 0; i < data.length; i += 4) {
+      const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+      data[i] = data[i+1] = data[i+2] = avg;
+    }
+  }
+  if (document.getElementById('invert').checked) {
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 255 - data[i];
+      data[i+1] = 255 - data[i+1];
+      data[i+2] = 255 - data[i+2];
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+  if (document.getElementById('blur').checked) {
+    ctx.filter = 'blur(2px)';
+    ctx.drawImage(canvas, 0, 0);
+    ctx.filter = 'none';
+  }
+
+  // Draw affirmation
+  const text = affirmationText.value;
+  if (text) {
+    const pos = affirmationPosition.value;
+    const y = pos === 'top' ? 60 : pos === 'center' ? h / 2 : h - 40;
+    ctx.font = '48px sans-serif';
+    ctx.fillStyle = 'white';
+    ctx.textAlign = 'center';
+    ctx.strokeStyle = 'black';
+    ctx.lineWidth = 3;
+    ctx.strokeText(text, w / 2, y);
+    ctx.fillText(text, w / 2, y);
+  }
+}
+
+generateBtn.addEventListener('click', () => {
+  drawWallpaper();
+  const format = formatSelect.value;
+  const dataURL = canvas.toDataURL(`image/${format}`);
+  downloadLink.href = dataURL;
+  downloadLink.download = `wallpaper-${Date.now()}.${format}`;
+  downloadLink.style.display = 'inline-block';
+});
+
+// Save settings
+const saveBtn = document.getElementById('saveSettingsBtn');
+saveBtn.addEventListener('click', () => {
+  localStorage.setItem('affirmationText', affirmationText.value);
+  localStorage.setItem('affirmationPosition', affirmationPosition.value);
+  localStorage.setItem('sizeSelect', sizeSelect.value);
+  localStorage.setItem('formatSelect', formatSelect.value);
+  localStorage.setItem('imagePosition', document.getElementById('imagePosition').value);
+  localStorage.setItem('fitMode', fitModeSelect.value);
+  localStorage.setItem('blurFillMode', blurFillMode.value);
+  localStorage.setItem('fillColor', fillColorPicker.value);
+  localStorage.setItem('desaturate', document.getElementById('desaturate').checked);
+  localStorage.setItem('blur', document.getElementById('blur').checked);
+  localStorage.setItem('invert', document.getElementById('invert').checked);
+  alert('✅ Settings saved!');
+});
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('affirmationText')) affirmationText.value = localStorage.getItem('affirmationText');
+  if (localStorage.getItem('affirmationPosition')) affirmationPosition.value = localStorage.getItem('affirmationPosition');
+  if (localStorage.getItem('sizeSelect')) sizeSelect.value = localStorage.getItem('sizeSelect');
+  if (localStorage.getItem('formatSelect')) formatSelect.value = localStorage.getItem('formatSelect');
+  if (localStorage.getItem('imagePosition')) document.getElementById('imagePosition').value = localStorage.getItem('imagePosition');
+  if (localStorage.getItem('fitMode')) fitModeSelect.value = localStorage.getItem('fitMode');
+  if (localStorage.getItem('blurFillMode')) blurFillMode.value = localStorage.getItem('blurFillMode');
+  if (localStorage.getItem('fillColor')) fillColorPicker.value = localStorage.getItem('fillColor');
+  document.getElementById('desaturate').checked = localStorage.getItem('desaturate') === 'true';
+  document.getElementById('blur').checked = localStorage.getItem('blur') === 'true';
+  document.getElementById('invert').checked = localStorage.getItem('invert') === 'true';
+  fitModeSelect.dispatchEvent(new Event('change'));
+});
+</script>
 </body>
 </html>
+
 
