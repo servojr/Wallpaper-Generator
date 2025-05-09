@@ -88,11 +88,18 @@
     </select>
 
     <label>Image Position:</label>
-    <select id="imagePosition">
-      <option value="top">Top</option>
-      <option value="center" selected>Center</option>
-      <option value="bottom">Bottom</option>
-    </select>
+<select id="imagePosition">
+  <option value="top">Top</option>
+  <option value="center" selected>Center</option>
+  <option value="bottom">Bottom</option>
+</select>
+
+<label for="fitMode">Photo Fit Mode:</label>
+<select id="fitMode">
+  <option value="crop" selected>Crop to Fill</option>
+  <option value="fit-color">Fit with Color</option>
+  <option value="fit-blur">Fit with Blurred Background</option>
+</select>
 
     
 <label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
@@ -242,6 +249,7 @@
   </script>
 </body>
 </html>
+
 
 
 
