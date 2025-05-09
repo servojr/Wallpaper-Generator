@@ -226,7 +226,33 @@
         if (alignment === 'top') y = 0;
         if (alignment === 'bottom') y = height - imgHeight;
 
-        ctx.drawImage(preview, x, y, imgWidth, imgHeight);
+        const img = new Image();
+        img.onload = () => {
+          ctx.drawImage(img, x, y, imgWidth, imgHeight);
+
+          const affirmation = affirmationInput.value;
+          const position = affirmationPos.value;
+          let textY = position === 'top' ? 80 : position === 'center' ? height / 2 : height - 60;
+
+          if (affirmation) {
+            ctx.font = '48px Segoe UI, sans-serif';
+            ctx.fillStyle = '#ffffff';
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 3;
+            ctx.textAlign = 'center';
+            ctx.strokeText(affirmation, width / 2, textY);
+            ctx.fillText(affirmation, width / 2, textY);
+          }
+
+          downloadBtn.style.display = 'inline-block';
+
+          const format = document.getElementById('formatSelect').value;
+          const link = document.getElementById('canvasDownloadLink');
+          const dataURL = canvas.toDataURL(`image/${format}`);
+          link.href = dataURL;
+          link.download = `wallpaper-${Date.now()}.${format}`;
+        };
+        img.src = preview.src;
         ctx.filter = 'none';
 
         const affirmation = affirmationInput.value;
@@ -301,4 +327,5 @@
   </script>
 </body>
 </html>
+
 
