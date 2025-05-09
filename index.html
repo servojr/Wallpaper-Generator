@@ -72,16 +72,23 @@
 
     <label>Wallpaper Size:</label>
     <select id="sizeSelect">
-      <option value="1024x768">1024x768</option>
-      <option value="1280x1024">1280x1024</option>
-      <option value="1600x1200">1600x1200</option>
-      <option value="1920x1080">1920x1080 (wide)</option>
-      <option value="2560x1440">2560x1440 (QHD)</option>
-      <option value="3840x2160">3840x2160 (4K UHD)</option>
+      <option value="1024x768">1024×768</option>
+      <option value="1280x1024">1280×1024</option>
+      <option value="1600x1200">1600×1200</option>
+      <option value="1920x1080">1920×1080 (HD)</option>
+      <option value="2560x1440">2560×1440 (QHD)</option>
+      <option value="3840x2160">3840×2160 (4K UHD)</option>
+    </select>
+
+    <label>File Format:</label>
+    <select id="formatSelect">
+      <option value="png" selected>PNG</option>
+      <option value="jpeg">JPEG</option>
+      <option value="webp">WEBP</option>
     </select>
 
     <button type="button" id="generateBtn">Create Wallpaper</button>
-    <a id="downloadLink" style="display:none" download>Download</a>
+    <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
   </form>
 
   <img id="preview">
@@ -94,6 +101,7 @@
     const affirmationText = document.getElementById('affirmationText');
     const affirmationPosition = document.getElementById('affirmationPosition');
     const sizeSelect = document.getElementById('sizeSelect');
+    const formatSelect = document.getElementById('formatSelect');
     const generateBtn = document.getElementById('generateBtn');
     const downloadLink = document.getElementById('downloadLink');
     const preview = document.getElementById('preview');
@@ -101,18 +109,17 @@
     imageUpload.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = event => {
-        preview.src = event.target.result;
-        preview.style.display = 'block';
-      };
-      reader.readAsDataURL(file);
+      const blobUrl = URL.createObjectURL(file);
+      preview.src = blobUrl;
+      preview.style.display = 'block';
+      preview.dataset.blob = blobUrl;
     });
 
     generateBtn.addEventListener('click', () => {
-      if (!preview.src) return alert("Please upload an image first.");
-
+      const blobUrl = preview.dataset.blob;
+      if (!blobUrl) return alert("Please upload an image first.");
       const [w, h] = sizeSelect.value.split('x').map(Number);
+      const format = formatSelect.value;
       canvas.width = w;
       canvas.height = h;
 
@@ -140,17 +147,17 @@
           ctx.fillText(text, w / 2, yPos);
         }
 
-        const dataUrl = canvas.toDataURL('image/png');
+        const dataUrl = canvas.toDataURL(`image/${format}`);
         downloadLink.href = dataUrl;
-        downloadLink.download = `wallpaper-${Date.now()}.png`;
+        downloadLink.download = `wallpaper-${Date.now()}.${format}`;
         downloadLink.style.display = 'inline-block';
-        downloadLink.textContent = '⬇️ Download Wallpaper';
       };
-      img.src = preview.src;
+      img.src = blobUrl;
     });
   </script>
 </body>
 </html>
+
 
 
 
