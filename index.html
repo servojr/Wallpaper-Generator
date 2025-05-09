@@ -95,9 +95,9 @@
     </select>
 
     <label>Optional Effects:</label>
-    <label style="text-align: left;"><input type="checkbox" id="desaturate" style="margin-right: 8px; vertical-align: middle;">Black & White</label>
-    <label style="text-align: left;"><input type="checkbox" id="blur" style="margin-right: 8px; vertical-align: middle;">Blur</label>
-    <label style="text-align: left;"><input type="checkbox" id="invert" style="margin-right: 8px; vertical-align: middle;">Invert Colors</label>
+    <div style="display: flex; align-items: center; margin: 5px 0;"><input type="checkbox" id="desaturate"><label for="desaturate" style="margin-left: 8px;">Black & White</label></div>
+    <div style="display: flex; align-items: center; margin: 5px 0;"><input type="checkbox" id="blur"><label for="blur" style="margin-left: 8px;">Blur</label></div>
+    <div style="display: flex; align-items: center; margin: 5px 0;"><input type="checkbox" id="invert"><label for="invert" style="margin-left: 8px;">Invert Colors</label></div>
 
     <button type="button" id="generateBtn">Create Wallpaper</button>
     <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
@@ -206,6 +206,7 @@
   </script>
 </body>
 </html>
+
 
 
 
