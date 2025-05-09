@@ -80,14 +80,14 @@
       <option value="3840x2160">3840×2160 (4K UHD)</option>
     </select>
 
-    <label>File Format:</label>
+    <label for="formatSelect">File Format:</label>
     <select id="formatSelect">
       <option value="png" selected>PNG</option>
       <option value="jpeg">JPEG</option>
       <option value="webp">WEBP</option>
     </select>
 
-    <label>Image Position:</label>
+    <label for="imagePosition">Image Position:</label>
     <select id="imagePosition">
       <option value="top">Top</option>
       <option value="center" selected>Center</option>
@@ -99,10 +99,10 @@
     </select>
 
     <label>Optional Effects:</label>
-    <div style="display: flex; flex-direction: column; gap: 8px; align-items: flex-start;">
-      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"> Black & White</label>
-      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"> Blur</label>
-      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"> Invert Colors</label>
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"><span>Black & White</span></div>
+      <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"><span>Blur</span></div>
+      <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"><span>Invert Colors</span></div>
     </div>
 
     <button type="button" id="generateBtn">Create Wallpaper</button>
