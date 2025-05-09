@@ -56,7 +56,8 @@
 </head>
 <body>
   <h1>🖼️ My Desktop Wallpaper Generator</h1>
-  <form>
+  $1
+    <button type="button" id="saveSettingsBtn">💾 Save Settings</button>
     <label>Upload Image:</label>
     <input type="file" id="imageUpload" accept="image/*">
 
@@ -253,16 +254,39 @@
       };
       img.src = blobUrl;
     });
-  </script>
+  
+    // Save settings
+    const saveBtn = document.getElementById('saveSettingsBtn');
+    saveBtn.addEventListener('click', () => {
+      localStorage.setItem('affirmationText', affirmationText.value);
+      localStorage.setItem('affirmationPosition', affirmationPosition.value);
+      localStorage.setItem('sizeSelect', sizeSelect.value);
+      localStorage.setItem('formatSelect', formatSelect.value);
+      localStorage.setItem('imagePosition', document.getElementById('imagePosition').value);
+      localStorage.setItem('fitMode', fitModeSelect.value);
+      localStorage.setItem('blurFillMode', document.getElementById('blurFillMode').value);
+      localStorage.setItem('fillColor', fillColorPicker.value);
+      localStorage.setItem('desaturate', document.getElementById('desaturate').checked);
+      localStorage.setItem('blur', document.getElementById('blur').checked);
+      localStorage.setItem('invert', document.getElementById('invert').checked);
+      alert('✅ Settings saved!');
+    });
+
+    // Load settings on page load
+    window.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('affirmationText')) affirmationText.value = localStorage.getItem('affirmationText');
+      if (localStorage.getItem('affirmationPosition')) affirmationPosition.value = localStorage.getItem('affirmationPosition');
+      if (localStorage.getItem('sizeSelect')) sizeSelect.value = localStorage.getItem('sizeSelect');
+      if (localStorage.getItem('formatSelect')) formatSelect.value = localStorage.getItem('formatSelect');
+      if (localStorage.getItem('imagePosition')) document.getElementById('imagePosition').value = localStorage.getItem('imagePosition');
+      if (localStorage.getItem('fitMode')) fitModeSelect.value = localStorage.getItem('fitMode');
+      if (localStorage.getItem('blurFillMode')) document.getElementById('blurFillMode').value = localStorage.getItem('blurFillMode');
+      if (localStorage.getItem('fillColor')) fillColorPicker.value = localStorage.getItem('fillColor');
+      document.getElementById('desaturate').checked = localStorage.getItem('desaturate') === 'true';
+      document.getElementById('blur').checked = localStorage.getItem('blur') === 'true';
+      document.getElementById('invert').checked = localStorage.getItem('invert') === 'true';
+      fitModeSelect.dispatchEvent(new Event('change'));
+    });
+$1
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
