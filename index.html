@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Desktop Wallpaper Generator</title>
+  <title>Wallpaper Generator</title>
   <style>
     body {
       margin: 0;
@@ -55,7 +55,7 @@
   </style>
 </head>
 <body>
-  <h1>🖼️ My Desktop Wallpaper Generator</h1>
+  <h1>🖼️ Wallpaper Generator</h1>
   <form>
     <label for="imageUpload">Upload Image:</label>
     <input type="file" id="imageUpload" accept="image/*">
@@ -95,11 +95,9 @@
     </select>
 
     <label>Optional Effects:</label>
-    <div style="display: flex; flex-direction: column; gap: 8px;">
-      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"> Black & White</label>
-      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"> Blur</label>
-      <label style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"> Invert Colors</label>
-    </div>
+    <label><input type="checkbox" id="desaturate"> Black & White</label>
+    <label><input type="checkbox" id="blur"> Blur</label>
+    <label><input type="checkbox" id="invert"> Invert Colors</label>
 
     <button type="button" id="generateBtn">Create Wallpaper</button>
     <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
