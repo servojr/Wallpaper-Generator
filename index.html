@@ -128,7 +128,7 @@
 let currentImage = null;
 let originalImageSrc = null;
 let dragOffset = { x: 0, y: 0 };
-let dragPosition = { x: 0, y: 0 };
+let dragPosition = { x: null, y: null };
 let isDragging = false;
 
 const canvas = document.getElementById('canvas');
@@ -223,7 +223,18 @@ function drawWallpaper() {
   const imgW = currentImage.width * scale;
   const imgH = currentImage.height * scale;
 
-  ctx.drawImage(currentImage, dragPosition.x, dragPosition.y, imgW, imgH);
+  let defaultY = 0;
+  const alignment = document.getElementById('imagePosition').value;
+  if (alignment === 'top') {
+    defaultY = 0;
+  } else if (alignment === 'center') {
+    defaultY = (h - imgH) / 2;
+  } else if (alignment === 'bottom') {
+    defaultY = h - imgH;
+  }
+  const finalX = dragPosition.x ?? (w - imgW) / 2;
+  const finalY = dragPosition.y ?? defaultY;
+  ctx.drawImage(currentImage, finalX, finalY, imgW, imgH);
 
   // Optional effects
   let imageData = ctx.getImageData(0, 0, w, h);
@@ -306,5 +317,6 @@ window.addEventListener('DOMContentLoaded', () => {
 </script>
 </body>
 </html>
+
 
 
