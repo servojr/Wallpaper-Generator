@@ -99,12 +99,7 @@
   </form>
 
   <img id="preview">
-  <div id="canvasContainer">
-    <canvas id="canvas" width="1024" height="768"></canvas>
-    </div>
-  </div>
-
-  
+  <canvas id="canvas" width="1024" height="768"></canvas>
 
   <script>
     const canvas = document.getElementById('canvas');
@@ -137,9 +132,6 @@
 
       const img = new Image();
       img.onload = () => {
-        const wrapper = document.getElementById('canvasWrapper');
-        wrapper.style.left = '0px';
-        wrapper.style.top = '0px';
         const scale = Math.max(w / img.width, h / img.height);
         const imgW = img.width * scale;
         const imgH = img.height * scale;
@@ -201,14 +193,6 @@
       };
       img.src = blobUrl;
     });
-  
-</script>
+  </script>
 </body>
 </html>
-
-
-
-
-
-
-
