@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Wallpaper: Create cool desktop or phone wallpapers with calendar.</title>
+  <meta name="description" content="Convert any photo into a perfectly-sized desktop wallpaper with a monthly calendar and visual effects.">
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      margin-top: 30px;
+      font-size: 2em;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.4);
+    }
+
+    form {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      backdrop-filter: blur(8px);
+      max-width: 600px;
+      width: 90%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input[type="text"],
+    input[type="file"],
+    select {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      font-size: 1em;
+    }
+
+    button {
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      background-color: #fff;
+      color: #333;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    button:hover {
+      background-color: #eee;
+    }
+
+    canvas {
+      border: 2px solid #fff;
+      box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      margin-bottom: 40px;
+      display: block;
+      max-width: 100%;
+    }
+
+    .checkbox-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: #fff;
+    }
+
+    #canvasDownloadLink {
+      color: #fff;
+      margin-top: 10px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>🖼️ Wallpaper Generator</h1>
+  <form id="wallpaperForm">
+    <label for="imageUpload">Upload your photo:</label>
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <label for="affirmationText">Affirmation Text:</label>
+    <input type="text" id="affirmationText" placeholder="e.g. I am enough">
+
+    <label for="affirmationPosition">Affirmation Position:</label>
+    <select id="affirmationPosition">
+      <option value="top">Top</option>
+      <option value="center">Center</option>
+      <option value="bottom" selected>Bottom</option>
+    </select>
+
+    <label for="sizeSelect">Wallpaper Size:</label>
+    <select id="sizeSelect">
+      <option value="1024x768">1024x768</option>
+      <option value="1280x1024">1280x1024</option>
+      <option value="1600x1200">1600x1200</option>
+      <option value="1920x1080">1920x1080 (wide)</option>
+      <option value="2560x1440">2560x1440 (QHD)</option>
+      <option value="3840x2160">3840x2160 (4K UHD)</option>
+    </select>
+
+    <label for="alignmentSelect">Image Position:</label>
+    <select id="alignmentSelect">
+      <option value="center">Center</option>
+      <option value="top">Top</option>
+      <option value="bottom">Bottom</option>
+    </select>
+
+    <label for="formatSelect">Save As Format:</label>
+    <select id="formatSelect">
+      <option value="png" selected>PNG</option>
+      <option value="jpeg">JPEG</option>
+      <option value="webp">WEBP</option>
+    </select>
+
+    <div class="checkbox-label">
+      <input type="checkbox" id="effectDesaturate">
+      <label for="effectDesaturate">Black & White</label>
+    </div>
+    <div class="checkbox-label">
+      <input type="checkbox" id="effectBlur">
+      <label for="effectBlur">Blur</label>
+    </div>
+
+    <button type="button" id="generateBtn">🎨 Create Wallpaper</button>
+    <button type="button" id="resetBtn">🔁 Reset to Original</button>
+    <button type="button" id="downloadBtn" style="display:none">⬇️ Download Wallpaper</button>
+    <a id="canvasDownloadLink" style="display:inline-block; margin-top: 10px; color: #000; text-decoration: underline;" download>⬇️ Right-click or Click Here to Download Wallpaper</a>
+  </form>
+  
+  <img id="preview" style="max-width: 400px; display: none; margin: 20px auto; border: 2px solid white; box-shadow: 0 0 8px rgba(0,0,0,0.4); border-radius: 8px;">
+  
+  <script>
+    window.addEventListener('load', () => {
+      const canvas = document.getElementById('canvas');
+      if (!canvas) {
+        console.error('Canvas element not found.');
+        return;
+      }
+      const ctx = canvas.getContext('2d');
+      const imageUpload = document.getElementById('imageUpload');
+      const sizeSelect = document.getElementById('sizeSelect');
+      const alignmentSelect = document.getElementById('alignmentSelect');
+      const generateBtn = document.getElementById('generateBtn');
+      const downloadBtn = document.getElementById('downloadBtn');
+      const affirmationInput = document.getElementById('affirmationText');
+      const affirmationPos = document.getElementById('affirmationPosition');
+
+      const preview = document.getElementById('preview');
+      let originalImageSrc = null;
+
+      imageUpload.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = async () => {
+          await img.decode();
+          if (img.width === 0 || img.height === 0) {
+            alert('Image failed to load properly. Please try another file.');
+            return;
+          }
+          console.log('Image loaded:', img.width, 'x', img.height);
+          originalImageSrc = img.src;
+          const preview = document.getElementById('preview');
+          preview.src = img.src;
+          preview.style.display = 'block';
+        };
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+
+      function generateWallpaper() {
+        if (!preview || !preview.src) return alert('Please upload an image first.');
+        if (preview.naturalWidth === 0 || preview.naturalHeight === 0) {
+          alert('Image is not fully loaded. Try again in a moment.');
+          console.warn('⚠️ Preview image dimensions are zero:', preview);
+          return;
+        }
+        canvas.style.display = 'block';
+        
+        const [width, height] = sizeSelect.value.split('x').map(Number);
+        canvas.width = width;
+        canvas.height = height;
+
+        ctx.clearRect(0, 0, width, height);
+        ctx.fillStyle = '#666';
+        ctx.fillRect(0, 0, width, height);
+        console.log('Drawing image at scale:', currentImage?.width, '→', width);
+
+        // 🔴 DEBUG RECTANGLE — should appear top left if canvas is working
+        ctx.fillStyle = 'red';
+        ctx.fillRect(10, 10, 100, 100);
+        ctx.fillStyle = 'white';
+
+        let filter = '';
+        if (document.getElementById('effectDesaturate').checked) filter += 'grayscale(1) ';
+        if (document.getElementById('effectBlur').checked) filter += 'blur(2px) ';
+        ctx.filter = filter.trim();
+
+        const scale = Math.max(width / preview.naturalWidth, height / preview.naturalHeight);
+        const imgWidth = preview.naturalWidth * scale;
+        const imgHeight = preview.naturalHeight * scale;
+        const x = (width - imgWidth) / 2;
+        let y = (height - imgHeight) / 2;
+
+        const alignment = alignmentSelect.value;
+        if (alignment === 'top') y = 0;
+        if (alignment === 'bottom') y = height - imgHeight;
+
+        ctx.drawImage(preview, x, y, imgWidth, imgHeight);
+        ctx.filter = 'none';
+
+        const affirmation = affirmationInput.value;
+        const position = affirmationPos.value;
+        let textY = position === 'top' ? 80 : position === 'center' ? height / 2 : height - 60;
+
+        if (affirmation) {
+          ctx.font = '48px Segoe UI, sans-serif';
+          ctx.fillStyle = '#ffffff';
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 3;
+          ctx.textAlign = 'center';
+          ctx.strokeText(affirmation, width / 2, textY);
+          ctx.fillText(affirmation, width / 2, textY);
+        }
+
+        downloadBtn.style.display = 'inline-block';
+
+        const format = document.getElementById('formatSelect').value;
+        const link = document.getElementById('canvasDownloadLink');
+        const dataURL = canvas.toDataURL(`image/${format}`);
+        link.href = dataURL;
+        link.download = `wallpaper-${Date.now()}.${format}`;
+      }
+
+      generateBtn.addEventListener('click', () => {
+  generateWallpaper();
+});
+
+      downloadBtn.addEventListener('click', async () => {
+        const format = document.getElementById('formatSelect').value;
+        const uniqueName = `wallpaper-${Date.now()}.${format}`;
+        try {
+          const dataURL = canvas.toDataURL(`image/${format}`);
+          const blob = await (await fetch(dataURL)).blob();
+          const link = document.createElement('a');
+          link.download = uniqueName;
+          link.href = URL.createObjectURL(blob);
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(link.href);
+
+          const message = document.createElement('p');
+          message.textContent = `✅ Saved as: ${uniqueName}`;
+          message.style.color = 'white';
+          message.style.marginTop = '10px';
+          message.style.transition = 'opacity 1s ease';
+          document.body.appendChild(message);
+          setTimeout(() => {
+            message.style.opacity = '0';
+            setTimeout(() => message.remove(), 1000);
+          }, 3000);
+        } catch (error) {
+          alert('Download failed: could not export image. Try re-creating your wallpaper.');
+        }
+      });
+
+      document.getElementById('resetBtn').addEventListener('click', () => {
+        if (!originalImageSrc) return alert('No original image loaded.');
+        const img = new Image();
+        img.onload = () => {
+          downloadBtn.style.display = 'none';
+          const link = document.getElementById('canvasDownloadLink');
+          link.href = '';
+          link.download = '';
+          generateWallpaper();
+        };
+        img.src = originalImageSrc;
+      });
+    });
+  </script>
+</body>
+</html>
