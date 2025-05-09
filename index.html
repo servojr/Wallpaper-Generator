@@ -94,12 +94,14 @@
       <option value="bottom">Bottom</option>
     </select>
 
-    <label>Photo Fit Mode:</label>
-    <select id="fitMode">
-      <option value="crop" selected>Crop to Fill</option>
-      <option value="fit-color">Fit with Color</option>
-      <option value="fit-blur">Fit with Blurred Background</option>
-    </select>
+    $1
+
+<label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
+<select id="blurFillMode" style="display: none;">
+  <option value="zoom" selected>Zoom</option>
+  <option value="tile">Tile</option>
+  <option value="stretch">Stretch</option>
+</select>
 
     <label id="fillColorLabel" style="display: none;">Background Color:</label>
     <input type="color" id="fillColor" value="#000000" style="display: none;">
@@ -132,10 +134,12 @@
     const fillColorLabel = document.getElementById('fillColorLabel');
 
     fitModeSelect.addEventListener('change', () => {
-      const mode = fitModeSelect.value;
-      fillColorPicker.style.display = mode === 'fit-color' ? 'block' : 'none';
-      fillColorLabel.style.display = mode === 'fit-color' ? 'block' : 'none';
-    });
+  const mode = fitModeSelect.value;
+  fillColorPicker.style.display = mode === 'fit-color' ? 'block' : 'none';
+  fillColorLabel.style.display = mode === 'fit-color' ? 'block' : 'none';
+  document.getElementById('blurFillMode').style.display = mode === 'fit-blur' ? 'block' : 'none';
+  document.getElementById('blurFillModeLabel').style.display = mode === 'fit-blur' ? 'block' : 'none';
+});
 
     imageUpload.addEventListener('change', e => {
       const file = e.target.files[0];
@@ -162,11 +166,20 @@
           ctx.fillStyle = fillColor;
           ctx.fillRect(0, 0, w, h);
         } else if (fitMode === 'fit-blur') {
-          ctx.drawImage(img, 0, 0, w, h);
-          ctx.filter = 'blur(20px)';
-          ctx.drawImage(canvas, 0, 0);
-          ctx.filter = 'none';
-        }
+  const blurStyle = document.getElementById('blurFillMode').value;
+  if (blurStyle === 'tile') {
+    const pattern = ctx.createPattern(img, 'repeat');
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0, 0, w, h);
+  } else if (blurStyle === 'stretch') {
+    ctx.drawImage(img, 0, 0, w, h);
+  } else {
+    ctx.drawImage(img, 0, 0, w, h);
+    ctx.filter = 'blur(20px)';
+    ctx.drawImage(canvas, 0, 0);
+    ctx.filter = 'none';
+  }
+}
 
         const scale = fitMode === 'crop' ? Math.max(w / img.width, h / img.height) : Math.min(w / img.width, h / img.height);
         const imgW = img.width * scale;
@@ -230,6 +243,7 @@
   </script>
 </body>
 </html>
+
 
 
 
