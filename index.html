@@ -56,7 +56,8 @@
 </head>
 <body>
   <h1>🖼️ My Desktop Wallpaper Generator</h1>
-  
+
+  <form>
     <button type="button" id="saveSettingsBtn">💾 Save Settings</button>
     <label>Upload Image:</label>
     <input type="file" id="imageUpload" accept="image/*">
@@ -89,26 +90,25 @@
     </select>
 
     <label>Image Position:</label>
-<select id="imagePosition">
-  <option value="top">Top</option>
-  <option value="center" selected>Center</option>
-  <option value="bottom">Bottom</option>
-</select>
+    <select id="imagePosition">
+      <option value="top">Top</option>
+      <option value="center" selected>Center</option>
+      <option value="bottom">Bottom</option>
+    </select>
 
-<label for="fitMode">Photo Fit Mode:</label>
-<select id="fitMode">
-  <option value="crop" selected>Crop to Fill</option>
-  <option value="fit-color">Fit with Color</option>
-  <option value="fit-blur">Fit with Blurred Background</option>
-</select>
+    <label for="fitMode">Photo Fit Mode:</label>
+    <select id="fitMode">
+      <option value="crop" selected>Crop to Fill</option>
+      <option value="fit-color">Fit with Color</option>
+      <option value="fit-blur">Fit with Blurred Background</option>
+    </select>
 
-    
-<label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
-<select id="blurFillMode" style="display: none;">
-  <option value="zoom" selected>Zoom</option>
-  <option value="tile">Tile</option>
-  <option value="stretch">Stretch</option>
-</select>
+    <label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
+    <select id="blurFillMode" style="display: none;">
+      <option value="zoom" selected>Zoom</option>
+      <option value="tile">Tile</option>
+      <option value="stretch">Stretch</option>
+    </select>
 
     <label id="fillColorLabel" style="display: none;">Background Color:</label>
     <input type="color" id="fillColor" value="#000000" style="display: none;">
@@ -124,169 +124,6 @@
 
   <img id="preview">
   <canvas id="canvas" width="1024" height="768"></canvas>
-
-  <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const imageUpload = document.getElementById('imageUpload');
-    const affirmationText = document.getElementById('affirmationText');
-    const affirmationPosition = document.getElementById('affirmationPosition');
-    const sizeSelect = document.getElementById('sizeSelect');
-    const formatSelect = document.getElementById('formatSelect');
-    const generateBtn = document.getElementById('generateBtn');
-    const downloadLink = document.getElementById('downloadLink');
-    const preview = document.getElementById('preview');
-    const fitModeSelect = document.getElementById('fitMode');
-    const fillColorPicker = document.getElementById('fillColor');
-    const fillColorLabel = document.getElementById('fillColorLabel');
-
-    fitModeSelect.addEventListener('change', () => {
-  const mode = fitModeSelect.value;
-  fillColorPicker.style.display = mode === 'fit-color' ? 'block' : 'none';
-  fillColorLabel.style.display = mode === 'fit-color' ? 'block' : 'none';
-  document.getElementById('blurFillMode').style.display = mode === 'fit-blur' ? 'block' : 'none';
-  document.getElementById('blurFillModeLabel').style.display = mode === 'fit-blur' ? 'block' : 'none';
-});
-
-    imageUpload.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const blobUrl = URL.createObjectURL(file);
-      preview.src = blobUrl;
-      preview.style.display = 'block';
-      preview.dataset.blob = blobUrl;
-    });
-
-    generateBtn.addEventListener('click', () => {
-      const blobUrl = preview.dataset.blob;
-      if (!blobUrl) return alert("Please upload an image first.");
-      const [w, h] = sizeSelect.value.split('x').map(Number);
-      const format = formatSelect.value;
-      const fitMode = fitModeSelect.value;
-      const fillColor = fillColorPicker.value;
-      canvas.width = w;
-      canvas.height = h;
-
-      const img = new Image();
-      img.onload = () => {
-        if (fitMode === 'fit-color') {
-          ctx.fillStyle = fillColor;
-          ctx.fillRect(0, 0, w, h);
-        } else if (fitMode === 'fit-blur') {
-          const blurStyle = document.getElementById('blurFillMode').value;
-          ctx.save();
-          ctx.filter = 'blur(20px)';
-
-          if (blurStyle === 'tile') {
-            const pattern = ctx.createPattern(img, 'repeat');
-            ctx.fillStyle = pattern;
-            ctx.fillRect(0, 0, w, h);
-          } else if (blurStyle === 'stretch') {
-            ctx.drawImage(img, 0, 0, w, h);
-          } else {
-            const scale = Math.max(w / img.width, h / img.height);
-            const bgW = img.width * scale;
-            const bgH = img.height * scale;
-            const bgX = (w - bgW) / 2;
-            const bgY = (h - bgH) / 2;
-            ctx.drawImage(img, bgX, bgY, bgW, bgH);
-          }
-
-          ctx.restore();
-        }
-
-        const scale = fitMode === 'crop' ? Math.max(w / img.width, h / img.height) : Math.min(w / img.width, h / img.height);
-        const imgW = img.width * scale;
-        const imgH = img.height * scale;
-        const x = (w - imgW) / 2;
-        const y = (h - imgH) / 2;
-        ctx.drawImage(img, x, y, imgW, imgH);
-
-        const desaturate = document.getElementById('desaturate').checked;
-        const blur = document.getElementById('blur').checked;
-        const invert = document.getElementById('invert').checked;
-
-        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-        let data = imageData.data;
-
-        if (desaturate) {
-          for (let i = 0; i < data.length; i += 4) {
-            const avg = (data[i] + data[i+1] + data[i+2]) / 3;
-            data[i] = data[i+1] = data[i+2] = avg;
-          }
-        }
-
-        if (invert) {
-          for (let i = 0; i < data.length; i += 4) {
-            data[i] = 255 - data[i];
-            data[i+1] = 255 - data[i+1];
-            data[i+2] = 255 - data[i+2];
-          }
-        }
-
-        if (desaturate || invert) {
-          ctx.putImageData(imageData, 0, 0);
-        }
-
-        if (blur) {
-          ctx.filter = 'blur(2px)';
-          ctx.drawImage(canvas, 0, 0);
-          ctx.filter = 'none';
-        }
-
-        const text = affirmationText.value;
-        if (text) {
-          const pos = affirmationPosition.value;
-          const yPos = pos === 'top' ? 80 : pos === 'center' ? h / 2 : h - 60;
-          ctx.font = '48px Segoe UI';
-          ctx.fillStyle = '#fff';
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 3;
-          ctx.textAlign = 'center';
-          ctx.strokeText(text, w / 2, yPos);
-          ctx.fillText(text, w / 2, yPos);
-        }
-
-        const dataUrl = canvas.toDataURL(`image/${format}`);
-        downloadLink.href = dataUrl;
-        downloadLink.download = `wallpaper-${Date.now()}.${format}`;
-        downloadLink.style.display = 'inline-block';
-      };
-      img.src = blobUrl;
-    });
-  
-    // Save settings
-    const saveBtn = document.getElementById('saveSettingsBtn');
-    saveBtn.addEventListener('click', () => {
-      localStorage.setItem('affirmationText', affirmationText.value);
-      localStorage.setItem('affirmationPosition', affirmationPosition.value);
-      localStorage.setItem('sizeSelect', sizeSelect.value);
-      localStorage.setItem('formatSelect', formatSelect.value);
-      localStorage.setItem('imagePosition', document.getElementById('imagePosition').value);
-      localStorage.setItem('fitMode', fitModeSelect.value);
-      localStorage.setItem('blurFillMode', document.getElementById('blurFillMode').value);
-      localStorage.setItem('fillColor', fillColorPicker.value);
-      localStorage.setItem('desaturate', document.getElementById('desaturate').checked);
-      localStorage.setItem('blur', document.getElementById('blur').checked);
-      localStorage.setItem('invert', document.getElementById('invert').checked);
-      alert('✅ Settings saved!');
-    });
-
-    // Load settings on page load
-    window.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('affirmationText')) affirmationText.value = localStorage.getItem('affirmationText');
-      if (localStorage.getItem('affirmationPosition')) affirmationPosition.value = localStorage.getItem('affirmationPosition');
-      if (localStorage.getItem('sizeSelect')) sizeSelect.value = localStorage.getItem('sizeSelect');
-      if (localStorage.getItem('formatSelect')) formatSelect.value = localStorage.getItem('formatSelect');
-      if (localStorage.getItem('imagePosition')) document.getElementById('imagePosition').value = localStorage.getItem('imagePosition');
-      if (localStorage.getItem('fitMode')) fitModeSelect.value = localStorage.getItem('fitMode');
-      if (localStorage.getItem('blurFillMode')) document.getElementById('blurFillMode').value = localStorage.getItem('blurFillMode');
-      if (localStorage.getItem('fillColor')) fillColorPicker.value = localStorage.getItem('fillColor');
-      document.getElementById('desaturate').checked = localStorage.getItem('desaturate') === 'true';
-      document.getElementById('blur').checked = localStorage.getItem('blur') === 'true';
-      document.getElementById('invert').checked = localStorage.getItem('invert') === 'true';
-      fitModeSelect.dispatchEvent(new Event('change'));
-    });
-$1
 </body>
 </html>
+
