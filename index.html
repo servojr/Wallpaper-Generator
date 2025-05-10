@@ -218,9 +218,9 @@
         ctx.fillText(text, w / 2, yText);
       }
 
-      const dataURL = canvas.toDataURL('image/png');
+      const dataURL = canvas.toDataURL('image/jpeg', 0.5);
       downloadLink.href = dataURL;
-      downloadLink.download = `wallpaper-${Date.now()}.png`;
+      downloadLink.download = `wallpaper-${Date.now()}.jpg`;
       downloadLink.style.display = 'inline-block';
 
       saveBtn.onclick = () => {
@@ -245,6 +245,7 @@
   </script>
 </body>
 </html>
+
 
 
 
