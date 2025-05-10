@@ -3,84 +3,67 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🖼️ My Desktop Wallpaper Generator</title>
+  <title>Custom Wallpaper Generator</title>
   <style>
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(to right, #461659, #aa3e14);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #5f2c82, #49a09d);
       color: #fff;
       text-align: center;
     }
-
     .container {
       max-width: 600px;
-      margin: 40px auto;
-      background-color: rgba(0, 0, 0, 0.4);
-      padding: 20px;
-      border-radius: 10px;
+      margin: 50px auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
     }
-
-    label, select, input[type="file"] {
+    input, select, button {
       display: block;
       width: 100%;
-      margin: 10px 0;
-    }
-
-    button {
-      padding: 10px 20px;
-      font-size: 16px;
-      cursor: pointer;
-      background-color: #ff7b00;
-      color: #fff;
-      border: none;
+      margin: 15px 0;
+      padding: 10px;
       border-radius: 5px;
+      border: none;
+      font-size: 16px;
     }
-
+    button {
+      background-color: #00c896;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
     button:hover {
-      background-color: #e06700;
+      background-color: #00b386;
     }
-
     canvas {
       display: block;
       margin: 40px auto;
       border: 2px solid #fff;
+      max-width: 100%;
+    }
+    #downloadLink {
+      display: inline-block;
+      margin-top: 20px;
+      color: #fff;
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <h1>✅ My Desktop Wallpaper Generator</h1>
+    <h1>Wallpaper Generator</h1>
     <input type="file" id="imageUpload" accept="image/*">
-    <label for="position">Attraction Position:</label>
-    <select id="position">
-      <option value="center">Center</option>
-      <option value="top">Top</option>
-      <option value="bottom">Bottom</option>
-    </select>
-
-    <label for="size">Wallpaper Size:</label>
-    <select id="size">
+    <label for="wallpaperSize">Wallpaper Size:</label>
+    <select id="wallpaperSize">
       <option value="1920x1080">1920x1080</option>
       <option value="2560x1440">2560x1440</option>
       <option value="3840x2160">3840x2160</option>
     </select>
-
-    <label for="format">File Format:</label>
-    <select id="format">
-      <option value="image/jpeg">JPG</option>
-      <option value="image/png">PNG</option>
-    </select>
-
-    <label>Optional Effects:</label>
-    <input type="checkbox" id="bw"> Black & White
-    <input type="checkbox" id="blur"> Blur
-    <input type="checkbox" id="invert"> Invert Colors
-
-    <br><br>
-    <button onclick="generateWallpaper()">Create Wallpaper</button>
-    <br><br>
-    <a id="downloadLink" style="display:none; color: #fff; text-decoration: underline;">Download Wallpaper</a>
+    <button onclick="generateWallpaper()">Generate Wallpaper</button>
+    <a id="downloadLink" style="display:none;">Download Wallpaper</a>
   </div>
 
   <canvas id="wallpaperCanvas"></canvas>
@@ -90,12 +73,10 @@
       const fileInput = document.getElementById('imageUpload');
       const canvas = document.getElementById('wallpaperCanvas');
       const ctx = canvas.getContext('2d');
-      const size = document.getElementById('size').value.split('x');
-      const format = document.getElementById('format').value;
-      const position = document.getElementById('position').value;
+      const size = document.getElementById('wallpaperSize').value.split('x');
 
       if (!fileInput.files[0]) {
-        alert("Please upload an image");
+        alert('Please upload an image.');
         return;
       }
 
@@ -104,46 +85,40 @@
       canvas.width = width;
       canvas.height = height;
 
-      // Background gradient
-      const gradient = ctx.createLinearGradient(0, 0, width, 0);
-      gradient.addColorStop(0, '#461659');
-      gradient.addColorStop(1, '#aa3e14');
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, width, height);
-
       const reader = new FileReader();
       reader.onload = function(e) {
         const img = new Image();
         img.onload = function() {
-          let imgWidth = 400;
+          ctx.clearRect(0, 0, width, height);
+
+          // Background gradient fill
+          const gradient = ctx.createLinearGradient(0, 0, width, height);
+          gradient.addColorStop(0, '#5f2c82');
+          gradient.addColorStop(1, '#49a09d');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+
+          // Resize image to fit within 600px width
+          const maxImageWidth = 600;
+          let imgWidth = maxImageWidth;
           let imgHeight = img.height * (imgWidth / img.width);
+
           let x = (width - imgWidth) / 2;
-          let y;
-
-          switch (position) {
-            case 'top': y = 50; break;
-            case 'bottom': y = height - imgHeight - 50; break;
-            default: y = (height - imgHeight) / 2;
-          }
-
-          ctx.save();
-          if (document.getElementById('bw').checked) ctx.filter = 'grayscale(100%)';
-          if (document.getElementById('blur').checked) ctx.filter = 'blur(3px)';
-          if (document.getElementById('invert').checked) ctx.filter = 'invert(100%)';
+          let y = (height - imgHeight) / 2;
 
           ctx.drawImage(img, x, y, imgWidth, imgHeight);
-          ctx.restore();
 
-          const link = document.getElementById('downloadLink');
-          link.href = canvas.toDataURL(format);
-          link.download = 'wallpaper.' + (format === 'image/png' ? 'png' : 'jpg');
-          link.style.display = 'block';
-          link.textContent = 'Download Wallpaper';
-        }
+          const downloadLink = document.getElementById('downloadLink');
+          downloadLink.href = canvas.toDataURL('image/png');
+          downloadLink.download = 'wallpaper.png';
+          downloadLink.style.display = 'inline';
+          downloadLink.textContent = 'Download Wallpaper';
+        };
         img.src = e.target.result;
-      }
+      };
       reader.readAsDataURL(fileInput.files[0]);
     }
   </script>
 </body>
 </html>
+
