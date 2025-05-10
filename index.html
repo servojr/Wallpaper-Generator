@@ -134,162 +134,166 @@
   <div id="myCreations"></div>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const sizeSelect = document.getElementById('sizeSelect');
-    const imagePosition = document.getElementById('imagePosition');
-    const fitMode = document.getElementById('fitMode');
-    const fillColor = document.getElementById('fillColor');
-    const downloadLink = document.getElementById('downloadLink');
-    const myCreations = document.getElementById('myCreations');
-    let currentImage = null;
+    window.addEventListener('DOMContentLoaded', () => {
+      const canvas = document.getElementById('canvas');
+      const ctx = canvas.getContext('2d');
+      const sizeSelect = document.getElementById('sizeSelect');
+      const imagePosition = document.getElementById('imagePosition');
+      const fitMode = document.getElementById('fitMode');
+      const fillColor = document.getElementById('fillColor');
+      const downloadLink = document.getElementById('downloadLink');
+      const myCreations = document.getElementById('myCreations');
+      let currentImage = null;
 
-    function drawWallpaper() {
-      const [cw, ch] = sizeSelect.value.split('x').map(Number);
-      canvas.width = cw;
-      canvas.height = ch;
-      ctx.clearRect(0, 0, cw, ch);
-      if (!currentImage) return;
-      ctx.fillStyle = fillColor?.value || '#000';
-      ctx.fillRect(0, 0, cw, ch);
-      let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
-      let dx = 0, dy = 0, dw = cw, dh = ch;
-      if (fitMode.value === 'stretch') {
-        sw = currentImage.width; sh = currentImage.height;
-      } else if (fitMode.value === 'cover') {
-        const imageRatio = currentImage.width / currentImage.height;
-        const canvasRatio = cw / ch;
-        if (imageRatio > canvasRatio) {
-          sh = currentImage.height;
-          sw = sh * canvasRatio;
-          sx = (currentImage.width - sw) / 2;
+      function drawWallpaper() {
+        const [cw, ch] = sizeSelect.value.split('x').map(Number);
+        canvas.width = cw;
+        canvas.height = ch;
+        ctx.clearRect(0, 0, cw, ch);
+        if (!currentImage) return;
+        ctx.fillStyle = fillColor?.value || '#000';
+        ctx.fillRect(0, 0, cw, ch);
+        let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
+        let dx = 0, dy = 0, dw = cw, dh = ch;
+        if (fitMode.value === 'stretch') {
+          sw = currentImage.width; sh = currentImage.height;
+        } else if (fitMode.value === 'cover') {
+          const imageRatio = currentImage.width / currentImage.height;
+          const canvasRatio = cw / ch;
+          if (imageRatio > canvasRatio) {
+            sh = currentImage.height;
+            sw = sh * canvasRatio;
+            sx = (currentImage.width - sw) / 2;
+          } else {
+            sw = currentImage.width;
+            sh = sw / canvasRatio;
+            sy = imagePosition.value === 'top' ? 0 : imagePosition.value === 'bottom' ? currentImage.height - sh : (currentImage.height - sh) / 2;
+          }
         } else {
-          sw = currentImage.width;
-          sh = sw / canvasRatio;
-          sy = imagePosition.value === 'top' ? 0 : imagePosition.value === 'bottom' ? currentImage.height - sh : (currentImage.height - sh) / 2;
+          dw = currentImage.width; dh = currentImage.height;
+          dx = (cw - dw) / 2;
+          dy = imagePosition.value === 'top' ? 0 : imagePosition.value === 'bottom' ? ch - dh : (ch - dh) / 2;
         }
-      } else {
-        dw = currentImage.width; dh = currentImage.height;
-        dx = (cw - dw) / 2;
-        dy = imagePosition.value === 'top' ? 0 : imagePosition.value === 'bottom' ? ch - dh : (ch - dh) / 2;
+        ctx.drawImage(currentImage, sx, sy, sw, sh, dx, dy, dw, dh);
+        downloadLink.href = canvas.toDataURL('image/png');
+        downloadLink.download = `wallpaper-${Date.now()}.png`;
+        downloadLink.style.display = 'inline-block';
       }
-      ctx.drawImage(currentImage, sx, sy, sw, sh, dx, dy, dw, dh);
-      downloadLink.href = canvas.toDataURL('image/png');
-      downloadLink.download = `wallpaper-${Date.now()}.png`;
-      downloadLink.style.display = 'inline-block';
-    }
 
-    document.getElementById('imageUpload').addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => { currentImage = img; drawWallpaper(); };
-        img.src = reader.result;
-      };
-      reader.readAsDataURL(file);
-    });
+      document.getElementById('imageUpload').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          const img = new Image();
+          img.onload = () => { currentImage = img; drawWallpaper(); };
+          img.src = reader.result;
+        };
+        reader.readAsDataURL(file);
+      });
 
-    document.getElementById('generateBtn').addEventListener('click', () => {
-      if (!currentImage) return alert("Please upload an image first.");
-      drawWallpaper();
-    });
+      document.getElementById('generateBtn').addEventListener('click', () => {
+        if (!currentImage) return alert("Please upload an image first.");
+        drawWallpaper();
+      });
 
-    document.getElementById('saveBtn').addEventListener('click', () => {
-      try {
-        const pixel = ctx.getImageData(0, 0, 1, 1).data;
-        const isBlank = pixel.every(v => v === 0);
-        if (isBlank) {
-          alert("Please create your wallpaper first before saving.");
-          return;
+      document.getElementById('saveBtn').addEventListener('click', () => {
+        try {
+          const pixel = ctx.getImageData(0, 0, 1, 1).data;
+          const isBlank = pixel.every(v => v === 0);
+          if (isBlank) {
+            alert("Please create your wallpaper first before saving.");
+            return;
+          }
+          const data = canvas.toDataURL("image/png");
+          let saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
+          if (saved.length >= 20) {
+            alert("You've reached the maximum of 20 saved wallpapers. Please delete one before saving another.");
+            return;
+          }
+          saved.push(data);
+          localStorage.setItem('wallpaperCreations', JSON.stringify(saved));
+          loadCreations();
+        } catch (err) {
+          alert("Error saving creation. Please try again.");
+          console.error(err);
         }
-        const data = canvas.toDataURL("image/png");
+      });
+
+      document.getElementById('clearAllBtn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to delete all saved wallpapers?')) {
+          localStorage.removeItem('wallpaperCreations');
+          loadCreations();
+        }
+      });
+
+      function deleteCreation(index) {
         let saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
-        if (saved.length >= 20) {
-          alert("You've reached the maximum of 20 saved wallpapers. Please delete one before saving another.");
-          return;
-        }
-        saved.push(data);
+        saved.splice(index, 1);
         localStorage.setItem('wallpaperCreations', JSON.stringify(saved));
         loadCreations();
-      } catch (err) {
-        alert("Error saving creation. Please try again.");
-        console.error(err);
       }
-    });
 
-    document.getElementById('clearAllBtn').addEventListener('click', () => {
-      if (confirm('Are you sure you want to delete all saved wallpapers?')) {
-        localStorage.removeItem('wallpaperCreations');
-        loadCreations();
+      function loadCreations() {
+        myCreations.innerHTML = '';
+        const saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
+        saved.forEach((dataUrl, index) => {
+          const wrapper = document.createElement('div');
+          wrapper.className = 'creation-wrapper';
+          const img = document.createElement('img');
+          img.src = dataUrl;
+          img.onclick = () => {
+            const imgObj = new Image();
+            imgObj.onload = () => { currentImage = imgObj; drawWallpaper(); };
+            imgObj.src = dataUrl;
+          };
+          const del = document.createElement('button');
+          del.className = 'delete-btn';
+          del.innerText = '×';
+          del.onclick = (e) => {
+            e.stopPropagation();
+            deleteCreation(index);
+          };
+          wrapper.appendChild(img);
+          wrapper.appendChild(del);
+          myCreations.appendChild(wrapper);
+        });
       }
-    });
 
-    function deleteCreation(index) {
-      let saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
-      saved.splice(index, 1);
-      localStorage.setItem('wallpaperCreations', JSON.stringify(saved));
+      const wallpapers = [
+        { name: "Nature 1", category: "Nature", file: "wallpapers/nature1.jpg" },
+        { name: "City 1", category: "City", file: "wallpapers/city1.jpg" },
+        { name: "Abstract 1", category: "Abstract", file: "wallpapers/abstract1.jpg" }
+      ];
+
+      const gallery = document.getElementById('wallpaperGallery');
+      const categorySelect = document.getElementById('wallpaperCategory');
+
+      function renderGallery(filter = "all") {
+        gallery.innerHTML = "";
+        wallpapers.filter(wp => filter === "all" || wp.category === filter).forEach(wp => {
+          const img = document.createElement("img");
+          img.src = wp.file;
+          img.alt = wp.name;
+          img.title = wp.name;
+          img.onclick = () => {
+            const loaded = new Image();
+            loaded.crossOrigin = "anonymous";
+            loaded.onload = () => { currentImage = loaded; drawWallpaper(); };
+            loaded.src = wp.file;
+          };
+          gallery.appendChild(img);
+        });
+      }
+
+      categorySelect.addEventListener("change", e => renderGallery(e.target.value));
+      renderGallery();
       loadCreations();
-    }
-
-    function loadCreations() {
-      myCreations.innerHTML = '';
-      const saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
-      saved.forEach((dataUrl, index) => {
-        const wrapper = document.createElement('div');
-        wrapper.className = 'creation-wrapper';
-        const img = document.createElement('img');
-        img.src = dataUrl;
-        img.onclick = () => {
-          const imgObj = new Image();
-          imgObj.onload = () => { currentImage = imgObj; drawWallpaper(); };
-          imgObj.src = dataUrl;
-        };
-        const del = document.createElement('button');
-        del.className = 'delete-btn';
-        del.innerText = '×';
-        del.onclick = (e) => {
-          e.stopPropagation();
-          deleteCreation(index);
-        };
-        wrapper.appendChild(img);
-        wrapper.appendChild(del);
-        myCreations.appendChild(wrapper);
-      });
-    }
-
-    const wallpapers = [
-      { name: "Nature 1", category: "Nature", file: "wallpapers/nature1.jpg" },
-      { name: "City 1", category: "City", file: "wallpapers/city1.jpg" },
-      { name: "Abstract 1", category: "Abstract", file: "wallpapers/abstract1.jpg" }
-    ];
-
-    const gallery = document.getElementById('wallpaperGallery');
-    const categorySelect = document.getElementById('wallpaperCategory');
-
-    function renderGallery(filter = "all") {
-      gallery.innerHTML = "";
-      wallpapers.filter(wp => filter === "all" || wp.category === filter).forEach(wp => {
-        const img = document.createElement("img");
-        img.src = wp.file;
-        img.alt = wp.name;
-        img.title = wp.name;
-        img.onclick = () => {
-          const loaded = new Image();
-          loaded.onload = () => { currentImage = loaded; drawWallpaper(); };
-          loaded.src = wp.file;
-        };
-        gallery.appendChild(img);
-      });
-    }
-
-    categorySelect.addEventListener("change", e => renderGallery(e.target.value));
-    renderGallery();
-    loadCreations();
+    });
   </script>
 </body>
 </html>
+
 
 
 
