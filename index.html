@@ -102,7 +102,13 @@
       <option value="bottom">Bottom</option>
     </select>
 
-    $1
+    <label for="fitMode">Photo Fit Mode:</label>
+<select id="fitMode">
+  <option value="crop" selected>Crop to Fill</option>
+  <option value="fit-color">Fit with Color</option>
+  <option value="fit-blur">Fit with Blurred Background</option>
+  <option value="fit-custom">Fit with Custom Background</option>
+</select>
 
 <label id="fitCustomColorLabel" style="display: none;">Background Fill Color (for Custom Background):</label>
 <input type="color" id="customBackgroundColor" value="#000000" style="display: none;">
@@ -330,5 +336,6 @@ function drawWallpaper() {
 </script>
 </body>
 </html>
+
 
 
