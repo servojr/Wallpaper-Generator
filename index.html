@@ -165,13 +165,29 @@
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      let imgWidth = currentImage.width;
-      let imgHeight = currentImage.height;
-      const ratio = Math.min(canvas.width / imgWidth, canvas.height / imgHeight);
-      imgWidth *= ratio;
-      imgHeight *= ratio;
-      let x = (canvas.width - imgWidth) / 2;
-      let y = imagePos === "top" ? 0 : imagePos === "bottom" ? canvas.height - imgHeight : (canvas.height - imgHeight) / 2;
+      const targetAspect = canvas.width / canvas.height;
+      const imageAspect = currentImage.width / currentImage.height;
+
+      let cropWidth, cropHeight, startX, startY;
+
+      if (targetAspect > imageAspect) {
+        cropWidth = currentImage.width;
+        cropHeight = currentImage.width / targetAspect;
+      } else {
+        cropHeight = currentImage.height;
+        cropWidth = currentImage.height * targetAspect;
+      }
+
+      if (imagePos === "top") {
+        startX = (currentImage.width - cropWidth) / 2;
+        startY = 0;
+      } else if (imagePos === "bottom") {
+        startX = (currentImage.width - cropWidth) / 2;
+        startY = currentImage.height - cropHeight;
+      } else {
+        startX = (currentImage.width - cropWidth) / 2;
+        startY = (currentImage.height - cropHeight) / 2;
+      }
 
       ctx.save();
       if (bw || blur || invert) {
@@ -181,7 +197,12 @@
         if (invert) f.push("invert(100%)");
         ctx.filter = f.join(" ");
       }
-      ctx.drawImage(currentImage, x, y, imgWidth, imgHeight);
+
+      ctx.drawImage(
+        currentImage,
+        startX, startY, cropWidth, cropHeight,
+        0, 0, canvas.width, canvas.height
+      );
       ctx.restore();
 
       if (affirmationText) {
@@ -255,8 +276,3 @@
   </script>
 </body>
 </html>
-
-
-
-
-
