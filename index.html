@@ -1,143 +1,118 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>🖼️ My Desktop Wallpaper Generator</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
-      font-family: sans-serif;
-      background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
+      font-family: Arial, sans-serif;
+      background: linear-gradient(to right, #461659, #aa3e14);
       color: #fff;
       text-align: center;
     }
-    form {
-      background: rgba(0,0,0,0.4);
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: rgba(0, 0, 0, 0.4);
       padding: 20px;
-      margin: 20px auto;
-      border-radius: 12px;
-      max-width: 480px;
+      border-radius: 10px;
     }
-    label, select, input, button {
+
+    label, select, input[type="file"] {
       display: block;
-      margin: 10px auto;
-      width: 90%;
+      width: 100%;
+      margin: 10px 0;
     }
-    canvas {
+
+    #output-image {
+      max-width: 400px;
+      height: auto;
       display: block;
-      margin: 20px auto;
-      border: 2px solid #fff;
+      margin: 40px auto;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+      border-radius: 8px;
     }
-    a#download {
-      display: inline-block;
-      margin-top: 10px;
+
+    button {
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #ff7b00;
       color: #fff;
-      text-decoration: underline;
+      border: none;
+      border-radius: 5px;
+    }
+
+    button:hover {
+      background-color: #e06700;
     }
   </style>
 </head>
 <body>
-  <h1>🖼️ My Desktop Wallpaper Generator</h1>
-  <form>
-    <label>Upload Image:
-      <input type="file" id="upload" accept="image/*">
-    </label>
+  <div class="container">
+    <h1>✅ My Desktop Wallpaper Generator</h1>
+    <input type="file" id="imageUpload" accept="image/*">
+    <label for="position">Attraction Position:</label>
+    <select id="position">
+      <option>Center</option>
+      <option>Top</option>
+      <option>Bottom</option>
+    </select>
 
-    <label>Wallpaper Size:
-      <select id="size">
-        <option value="1024x768">1024×768</option>
-        <option value="1920x1080">1920×1080 (HD)</option>
-        <option value="3840x2160">3840×2160 (4K)</option>
-      </select>
-    </label>
+    <label for="size">Wallpaper Size:</label>
+    <select id="size">
+      <option>1920x1080</option>
+      <option>2560x1440</option>
+      <option>3840x2160</option>
+    </select>
 
-    <label>Image Alignment:
-      <select id="align">
-        <option value="top">Top</option>
-        <option value="center" selected>Center</option>
-        <option value="bottom">Bottom</option>
-      </select>
-    </label>
+    <label for="format">File Format:</label>
+    <select id="format">
+      <option>JPG</option>
+      <option>PNG</option>
+    </select>
 
-    <button type="button" id="create">Create Wallpaper</button>
-    <a id="download" style="display:none" download="wallpaper.png">Download Wallpaper</a>
-  </form>
+    <label for="effects">Optional Effects:</label>
+    <input type="checkbox" id="bw"> Black & White
+    <input type="checkbox" id="blur"> Blur
+    <input type="checkbox" id="invert"> Invert Colors
 
-  <canvas id="canvas" width="1024" height="768"></canvas>
+    <br><br>
+    <button onclick="generateWallpaper()">Create Wallpaper</button>
+  </div>
+
+  <div id="wallpaper-preview">
+    <img id="output-image" src="" alt="Wallpaper Preview" style="display:none">
+  </div>
 
   <script>
-    const upload = document.getElementById("upload");
-    const size = document.getElementById("size");
-    const align = document.getElementById("align");
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const createBtn = document.getElementById("create");
-    const downloadLink = document.getElementById("download");
+    function generateWallpaper() {
+      const input = document.getElementById('imageUpload');
+      const preview = document.getElementById('output-image');
+      const file = input.files[0];
 
-    let uploadedImg = null;
+      if (!file) return alert("Please upload an image");
 
-    upload.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
       const reader = new FileReader();
-      reader.onload = () => {
-        const img = new Image();
-        img.onload = () => {
-          uploadedImg = img;
-        };
-        img.src = reader.result;
+      reader.onload = function(e) {
+        preview.src = e.target.result;
+        preview.style.display = 'block';
+
+        if (document.getElementById('bw').checked) {
+          preview.style.filter = 'grayscale(100%)';
+        } else if (document.getElementById('blur').checked) {
+          preview.style.filter = 'blur(5px)';
+        } else if (document.getElementById('invert').checked) {
+          preview.style.filter = 'invert(100%)';
+        } else {
+          preview.style.filter = 'none';
+        }
       };
       reader.readAsDataURL(file);
-    });
-
-    createBtn.addEventListener("click", () => {
-      if (!uploadedImg) {
-        alert("Please upload an image.");
-        return;
-      }
-
-      const [cw, ch] = size.value.split("x").map(Number);
-      canvas.width = cw;
-      canvas.height = ch;
-
-      const canvasRatio = cw / ch;
-      const imgRatio = uploadedImg.width / uploadedImg.height;
-
-      let sw, sh, sx = 0, sy = 0;
-
-      if (canvasRatio > imgRatio) {
-        // crop vertically
-        sw = uploadedImg.width;
-        sh = sw / canvasRatio;
-      } else {
-        // crop horizontally
-        sh = uploadedImg.height;
-        sw = sh * canvasRatio;
-      }
-
-      // horizontal crop is always centered
-      sx = (uploadedImg.width - sw) / 2;
-
-      const alignment = align.value;
-      if (alignment === "top") {
-        sy = 0;
-      } else if (alignment === "center") {
-        sy = (uploadedImg.height - sh) / 2;
-      } else if (alignment === "bottom") {
-        sy = uploadedImg.height - sh;
-      }
-
-      ctx.clearRect(0, 0, cw, ch);
-      ctx.drawImage(uploadedImg, sx, sy, sw, sh, 0, 0, cw, ch);
-
-      const dataURL = canvas.toDataURL("image/png");
-      downloadLink.href = dataURL;
-      downloadLink.style.display = "inline-block";
-    });
+    }
   </script>
 </body>
 </html>
-
-
