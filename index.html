@@ -3,54 +3,71 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Desktop Wallpaper Generator</title>
+  <title>🖼️ My Desktop Wallpaper Generator</title>
   <style>
     body {
       margin: 0;
-      padding: 0;
       font-family: 'Segoe UI', sans-serif;
       background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
       color: #fff;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
+      padding-bottom: 100px;
     }
+
+    h1 {
+      margin-top: 20px;
+    }
+
     form {
-      background: rgba(255, 255, 255, 0.1);
+      background: rgba(0, 0, 0, 0.4);
       padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      max-width: 600px;
+      margin: 20px 0;
       width: 90%;
-      margin: 30px auto;
+      max-width: 600px;
     }
-    label, select, input, button {
+
+    label {
+      margin-top: 10px;
       display: block;
-      width: 100%;
-      margin: 10px 0;
     }
-    button {
-      background: #fff;
-      color: #333;
-      font-weight: bold;
+
+    input, select, button {
+      width: 100%;
       padding: 10px;
+      margin-top: 5px;
       border: none;
       border-radius: 6px;
+    }
+
+    button {
+      background-color: #fff;
+      color: #000;
+      font-weight: bold;
+      margin-top: 15px;
       cursor: pointer;
     }
+
     canvas {
+      margin-top: 20px;
       border: 2px solid #fff;
-      margin: 20px 0;
-      display: block;
       max-width: 100%;
     }
-    #preview {
-      display: none;
-      max-width: 100%;
-      margin: 20px auto;
+
+    .preview-image {
+      margin-top: 20px;
       border-radius: 8px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.4);
+      box-shadow: 0 0 10px rgba(0,0,0,0.5);
+      max-width: 100%;
+    }
+
+    #downloadLink {
+      color: #fff;
+      margin-top: 10px;
+      display: inline-block;
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -61,6 +78,16 @@
     <label for="imageUpload">Upload Image:</label>
     <input type="file" id="imageUpload" accept="image/*">
 
+    <label for="affirmationText">Affirmation Text:</label>
+    <input type="text" id="affirmationText" placeholder="(Optional) Add a positive affirmation">
+
+    <label for="position">Affirmation Position:</label>
+    <select id="position">
+      <option value="top">Top</option>
+      <option value="center">Center</option>
+      <option value="bottom" selected>Bottom</option>
+    </select>
+
     <label for="sizeSelect">Wallpaper Size:</label>
     <select id="sizeSelect">
       <option value="1024x768">1024×768</option>
@@ -68,102 +95,97 @@
       <option value="3840x2160">3840×2160 (4K UHD)</option>
     </select>
 
-    <label for="imagePosition">Image Position:</label>
-    <select id="imagePosition">
+    <label for="imageAlign">Image Position:</label>
+    <select id="imageAlign">
       <option value="top">Top</option>
       <option value="center" selected>Center</option>
       <option value="bottom">Bottom</option>
     </select>
 
-    <label for="fitMode">Photo Fit Mode:</label>
-    <select id="fitMode">
-      <option value="original">Use Original Image</option>
-      <option value="stretch">Stretch to Fill</option>
-    </select>
-
-    <label for="fillColor">Background Color:</label>
-    <input type="color" id="fillColor" value="#000000">
-
     <button type="button" id="generateBtn">Create Wallpaper</button>
-    <a id="downloadLink" style="display:none; margin-top: 10px; color: #fff; text-decoration: underline;">Download Wallpaper</a>
+    <a id="downloadLink" style="display:none;">Download Wallpaper</a>
   </form>
+
+  <img id="originalPreview" class="preview-image" style="display:none;" />
 
   <canvas id="canvas" width="1024" height="768"></canvas>
 
   <script>
-let currentImage = null;
-const canvas = document.getElementById('canvas');
-const ctx = canvas.getContext('2d');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const imageUpload = document.getElementById('imageUpload');
+    const originalPreview = document.getElementById('originalPreview');
+    let uploadedImg = null;
 
-const sizeSelect = document.getElementById('sizeSelect');
-const imagePosition = document.getElementById('imagePosition');
-const fitMode = document.getElementById('fitMode');
-const fillColor = document.getElementById('fillColor');
+    imageUpload.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
 
-function drawWallpaper() {
-  const [cw, ch] = sizeSelect.value.split('x').map(Number);
-  canvas.width = cw;
-  canvas.height = ch;
-  ctx.clearRect(0, 0, cw, ch);
+      const reader = new FileReader();
+      reader.onload = function () {
+        const img = new Image();
+        img.onload = function () {
+          uploadedImg = img;
+          originalPreview.src = img.src;
+          originalPreview.style.display = "block";
+        };
+        img.src = reader.result;
+      };
+      reader.readAsDataURL(file);
+    });
 
-  if (!currentImage) return;
+    document.getElementById('generateBtn').addEventListener('click', () => {
+      if (!uploadedImg) {
+        alert("Please upload an image.");
+        return;
+      }
 
-  const iw = currentImage.width;
-  const ih = currentImage.height;
+      const [cw, ch] = document.getElementById('sizeSelect').value.split('x').map(Number);
+      canvas.width = cw;
+      canvas.height = ch;
 
-  ctx.fillStyle = fillColor?.value || '#000';
-  ctx.fillRect(0, 0, cw, ch);
+      // Fill background
+      ctx.fillStyle = "#000";
+      ctx.fillRect(0, 0, cw, ch);
 
-  let drawWidth, drawHeight;
-  let dx = 0, dy = 0;
+      // Image positioning logic
+      const iw = uploadedImg.width;
+      const ih = uploadedImg.height;
+      const scale = Math.min(cw / iw, ch / ih);
+      const sw = iw * scale;
+      const sh = ih * scale;
 
-  if (fitMode.value === 'stretch') {
-    drawWidth = cw;
-    drawHeight = ch;
-  } else {
-    drawWidth = iw;
-    drawHeight = ih;
+      let dx = (cw - sw) / 2;
+      let dy = 0;
+      const align = document.getElementById('imageAlign').value;
 
-    if (drawWidth > cw) drawWidth = cw;
-    if (drawHeight > ch) drawHeight = ch;
+      if (align === 'top') dy = 0;
+      else if (align === 'center') dy = (ch - sh) / 2;
+      else if (align === 'bottom') dy = ch - sh;
 
-    dx = (cw - drawWidth) / 2;
+      ctx.drawImage(uploadedImg, dx, dy, sw, sh);
 
-    if (imagePosition.value === 'top') {
-      dy = 0;
-    } else if (imagePosition.value === 'center') {
-      dy = (ch - drawHeight) / 2;
-    } else if (imagePosition.value === 'bottom') {
-      dy = ch - drawHeight;
-    }
-  }
+      // Draw affirmation text
+      const text = document.getElementById('affirmationText').value;
+      if (text.trim()) {
+        ctx.font = "bold 48px sans-serif";
+        ctx.fillStyle = "#ffffff";
+        ctx.textAlign = "center";
 
-  ctx.drawImage(currentImage, 0, 0, drawWidth, drawHeight, dx, dy, drawWidth, drawHeight);
-}
+        let textY = 60;
+        if (document.getElementById('position').value === "center") textY = ch / 2;
+        else if (document.getElementById('position').value === "bottom") textY = ch - 40;
 
-document.getElementById('imageUpload').addEventListener('change', (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = () => {
-    const img = new Image();
-    img.onload = () => {
-      currentImage = img;
-      drawWallpaper();
-    };
-    img.src = reader.result;
-  };
-  reader.readAsDataURL(file);
-});
+        ctx.fillText(text, cw / 2, textY);
+      }
 
-document.getElementById('generateBtn').addEventListener('click', () => {
-  if (!currentImage) return alert("Please upload an image first.");
-  drawWallpaper();
-  const link = document.getElementById('downloadLink');
-  link.href = canvas.toDataURL();
-  link.style.display = 'inline-block';
-  link.download = `wallpaper-${Date.now()}.png`;
-});
+      // Enable download
+      const link = document.getElementById('downloadLink');
+      link.href = canvas.toDataURL();
+      link.download = "wallpaper.png";
+      link.style.display = "inline-block";
+    });
   </script>
 </body>
 </html>
+
