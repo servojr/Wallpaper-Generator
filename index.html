@@ -27,15 +27,6 @@
       margin: 10px 0;
     }
 
-    #output-image {
-      max-width: 400px;
-      height: auto;
-      display: block;
-      margin: 40px auto;
-      box-shadow: 0 0 10px rgba(0,0,0,0.2);
-      border-radius: 8px;
-    }
-
     button {
       padding: 10px 20px;
       font-size: 16px;
@@ -49,6 +40,12 @@
     button:hover {
       background-color: #e06700;
     }
+
+    canvas {
+      display: block;
+      margin: 40px auto;
+      border: 2px solid #fff;
+    }
   </style>
 </head>
 <body>
@@ -57,61 +54,95 @@
     <input type="file" id="imageUpload" accept="image/*">
     <label for="position">Attraction Position:</label>
     <select id="position">
-      <option>Center</option>
-      <option>Top</option>
-      <option>Bottom</option>
+      <option value="center">Center</option>
+      <option value="top">Top</option>
+      <option value="bottom">Bottom</option>
     </select>
 
     <label for="size">Wallpaper Size:</label>
     <select id="size">
-      <option>1920x1080</option>
-      <option>2560x1440</option>
-      <option>3840x2160</option>
+      <option value="1920x1080">1920x1080</option>
+      <option value="2560x1440">2560x1440</option>
+      <option value="3840x2160">3840x2160</option>
     </select>
 
     <label for="format">File Format:</label>
     <select id="format">
-      <option>JPG</option>
-      <option>PNG</option>
+      <option value="image/jpeg">JPG</option>
+      <option value="image/png">PNG</option>
     </select>
 
-    <label for="effects">Optional Effects:</label>
+    <label>Optional Effects:</label>
     <input type="checkbox" id="bw"> Black & White
     <input type="checkbox" id="blur"> Blur
     <input type="checkbox" id="invert"> Invert Colors
 
     <br><br>
     <button onclick="generateWallpaper()">Create Wallpaper</button>
+    <br><br>
+    <a id="downloadLink" style="display:none; color: #fff; text-decoration: underline;">Download Wallpaper</a>
   </div>
 
-  <div id="wallpaper-preview">
-    <img id="output-image" src="" alt="Wallpaper Preview" style="display:none">
-  </div>
+  <canvas id="wallpaperCanvas"></canvas>
 
   <script>
     function generateWallpaper() {
-      const input = document.getElementById('imageUpload');
-      const preview = document.getElementById('output-image');
-      const file = input.files[0];
+      const fileInput = document.getElementById('imageUpload');
+      const canvas = document.getElementById('wallpaperCanvas');
+      const ctx = canvas.getContext('2d');
+      const size = document.getElementById('size').value.split('x');
+      const format = document.getElementById('format').value;
+      const position = document.getElementById('position').value;
 
-      if (!file) return alert("Please upload an image");
+      if (!fileInput.files[0]) {
+        alert("Please upload an image");
+        return;
+      }
+
+      const width = parseInt(size[0]);
+      const height = parseInt(size[1]);
+      canvas.width = width;
+      canvas.height = height;
+
+      // Background gradient
+      const gradient = ctx.createLinearGradient(0, 0, width, 0);
+      gradient.addColorStop(0, '#461659');
+      gradient.addColorStop(1, '#aa3e14');
+      ctx.fillStyle = gradient;
+      ctx.fillRect(0, 0, width, height);
 
       const reader = new FileReader();
       reader.onload = function(e) {
-        preview.src = e.target.result;
-        preview.style.display = 'block';
+        const img = new Image();
+        img.onload = function() {
+          let imgWidth = 400;
+          let imgHeight = img.height * (imgWidth / img.width);
+          let x = (width - imgWidth) / 2;
+          let y;
 
-        if (document.getElementById('bw').checked) {
-          preview.style.filter = 'grayscale(100%)';
-        } else if (document.getElementById('blur').checked) {
-          preview.style.filter = 'blur(5px)';
-        } else if (document.getElementById('invert').checked) {
-          preview.style.filter = 'invert(100%)';
-        } else {
-          preview.style.filter = 'none';
+          switch (position) {
+            case 'top': y = 50; break;
+            case 'bottom': y = height - imgHeight - 50; break;
+            default: y = (height - imgHeight) / 2;
+          }
+
+          ctx.save();
+          if (document.getElementById('bw').checked) ctx.filter = 'grayscale(100%)';
+          if (document.getElementById('blur').checked) ctx.filter = 'blur(3px)';
+          if (document.getElementById('invert').checked) ctx.filter = 'invert(100%)';
+
+          ctx.drawImage(img, x, y, imgWidth, imgHeight);
+          ctx.restore();
+
+          const link = document.getElementById('downloadLink');
+          link.href = canvas.toDataURL(format);
+          link.download = 'wallpaper.' + (format === 'image/png' ? 'png' : 'jpg');
+          link.style.display = 'block';
+          link.textContent = 'Download Wallpaper';
         }
-      };
-      reader.readAsDataURL(file);
+        img.src = e.target.result;
+      }
+      reader.readAsDataURL(fileInput.files[0]);
     }
   </script>
 </body>
