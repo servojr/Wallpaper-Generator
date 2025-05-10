@@ -247,12 +247,22 @@
     }
 
     saveBtn.addEventListener("click", () => {
-      const dataUrl = canvas.toDataURL("image/png");
-      const items = JSON.parse(localStorage.getItem("savedWallpapers") || "[]");
-      if (items.length >= 20) items.shift();
-      items.push(dataUrl);
-      localStorage.setItem("savedWallpapers", JSON.stringify(items));
-      updateSavedCreations();
+      try {
+        const tempCanvas = document.createElement("canvas");
+        tempCanvas.width = 800;
+        tempCanvas.height = 450;
+        tempCanvas.getContext("2d").drawImage(canvas, 0, 0, 800, 450);
+        const dataUrl = tempCanvas.toDataURL("image/jpeg", 0.6);
+
+        const items = JSON.parse(localStorage.getItem("savedWallpapers") || "[]");
+        if (items.length >= 20) items.shift();
+        items.push(dataUrl);
+        localStorage.setItem("savedWallpapers", JSON.stringify(items));
+        updateSavedCreations();
+      } catch (e) {
+        console.error("Save error:", e);
+        showToast("Storage limit reached. Try clearing some saved items.");
+      }
     });
 
     clearAllBtn.addEventListener("click", () => {
@@ -276,3 +286,4 @@
   </script>
 </body>
 </html>
+
