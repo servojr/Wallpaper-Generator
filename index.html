@@ -144,6 +144,7 @@
       img.onload = () => {
         currentImage = img;
         drawWallpaper();
+        showToast("Image uploaded successfully.");
       };
       img.src = URL.createObjectURL(file);
     });
@@ -238,7 +239,10 @@
       updateSavedCreations();
     });
 
-    createBtn.addEventListener("click", drawWallpaper);
+    createBtn.addEventListener("click", () => {
+      drawWallpaper();
+      showToast("Wallpaper created!");
+    });
 
     downloadLink.addEventListener("click", () => {
       const link = document.createElement("a");
@@ -251,6 +255,7 @@
   </script>
 </body>
 </html>
+
 
 
 
