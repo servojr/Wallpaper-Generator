@@ -168,6 +168,7 @@ imageUpload.addEventListener('change', (e) => {
     img.onload = () => {
       currentImage = img;
       dragPosition = { x: null, y: null };
+      userHasDragged = false;
     };
     img.src = event.target.result;
   };
@@ -349,5 +350,6 @@ function drawWallpaper() {
 </script>
 </body>
 </html>
+
 
 
