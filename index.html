@@ -267,9 +267,9 @@ function drawWallpaper() {
     ctx.fillRect(0, 0, w, h);
   } else if (fitMode === 'fit-custom' && backgroundImage) {
     ctx.save();
-    ctx.filter = document.getElementById('blur').checked ? 'blur(20px)' : 'none';
     ctx.fillStyle = document.getElementById('customBackgroundColor').value;
     ctx.fillRect(0, 0, w, h);
+    ctx.filter = document.getElementById('blur').checked ? 'blur(20px)' : 'none';
     ctx.drawImage(backgroundImage, 0, 0, w, h);
     ctx.restore();
   } else if (fitMode === 'fit-blur' && currentImage) {
@@ -336,6 +336,7 @@ function drawWallpaper() {
 </script>
 </body>
 </html>
+
 
 
 
