@@ -1,216 +1,221 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Custom Wallpaper Generator</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>My Desktop Wallpaper Generator</title>
   <style>
     body {
       margin: 0;
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      background: linear-gradient(to right, #5f2c82, #49a09d);
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
       color: #fff;
-      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
     }
-    .container {
-      max-width: 600px;
-      margin: 50px auto;
-      background-color: rgba(0, 0, 0, 0.5);
-      padding: 30px;
+    form {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
       border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 90%;
+      margin: 30px auto;
     }
-    input, select, label, button {
+    label, select, input, button {
       display: block;
       width: 100%;
       margin: 10px 0;
-      padding: 10px;
-      border-radius: 5px;
-      border: none;
-      font-size: 16px;
-    }
-    input[type="checkbox"] {
-      width: auto;
-      display: inline-block;
-      margin-right: 10px;
-    }
-    .checkbox-group {
-      text-align: left;
-      margin: 10px 0;
     }
     button {
-      background-color: #00c896;
-      color: white;
+      background: #fff;
+      color: #333;
       font-weight: bold;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
       cursor: pointer;
     }
-    button:hover {
-      background-color: #00b386;
-    }
     canvas {
-      display: block;
-      margin: 40px auto;
       border: 2px solid #fff;
+      margin: 20px 0;
+      display: block;
       max-width: 100%;
     }
-    #downloadLink {
-      display: inline-block;
+    #wallpaperGallery {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
       margin-top: 20px;
-      color: #fff;
-      text-decoration: underline;
+    }
+    #wallpaperGallery img {
+      width: 150px;
+      cursor: pointer;
+      border-radius: 6px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>Wallpaper Generator</h1>
+  <h1>🖼️ My Desktop Wallpaper Generator</h1>
+
+  <form>
+    <label for="imageUpload">Upload Image:</label>
     <input type="file" id="imageUpload" accept="image/*">
 
-    <label for="wallpaperSize">Wallpaper Size:</label>
-    <select id="wallpaperSize">
-      <option value="1024x768">1024x768</option>
-      <option value="1280x1024">1280x1024</option>
-      <option value="1600x1200">1600x1200</option>
-      <option value="1920x1080">1920x1080</option>
-      <option value="2560x1440">2560x1440</option>
-      <option value="3840x2160">3840x2160</option>
+    <label for="wallpaperCategory">Choose a category:</label>
+    <select id="wallpaperCategory">
+      <option value="all">All</option>
+      <option value="Nature">Nature</option>
+      <option value="City">City</option>
+      <option value="Abstract">Abstract</option>
     </select>
 
-    <label for="crop">Crop Position:</label>
-    <select id="crop">
-      <option value="center">Center</option>
-      <option value="left">Left/Top</option>
-      <option value="right">Right/Bottom</option>
+    <label for="sizeSelect">Wallpaper Size:</label>
+    <select id="sizeSelect">
+      <option value="1024x768">1024×768</option>
+      <option value="1920x1080">1920×1080 (Full HD)</option>
+      <option value="3840x2160">3840×2160 (4K UHD)</option>
     </select>
 
-    <div class="checkbox-group">
-      <input type="checkbox" id="calendar"> <label for="calendar">Include Calendar</label>
-      <label for="calendarMonth">Month:</label>
-      <select id="calendarMonth">
-        <option value="0">January</option>
-        <option value="1">February</option>
-        <option value="2">March</option>
-        <option value="3">April</option>
-        <option value="4">May</option>
-        <option value="5">June</option>
-        <option value="6">July</option>
-        <option value="7">August</option>
-        <option value="8">September</option>
-        <option value="9">October</option>
-        <option value="10">November</option>
-        <option value="11">December</option>
-      </select>
+    <label for="imagePosition">Image Position:</label>
+    <select id="imagePosition">
+      <option value="top">Top</option>
+      <option value="center" selected>Center</option>
+      <option value="bottom">Bottom</option>
+    </select>
 
-      <label for="calendarYear">Year:</label>
-      <select id="calendarYear">
-        <option>2024</option>
-        <option selected>2025</option>
-        <option>2026</option>
-        <option>2027</option>
-      </select>
+    <label for="fitMode">Photo Fit Mode:</label>
+    <select id="fitMode">
+      <option value="original">Use Original Image</option>
+      <option value="stretch">Stretch to Fill</option>
+    </select>
 
-      <label for="calendarColor">Calendar Color:</label>
-      <input type="color" id="calendarColor" value="#ffffff">
+    <label for="fillColor">Background Color:</label>
+    <input type="color" id="fillColor" value="#000000">
 
-      <label for="calendarPosition">Calendar Position:</label>
-      <select id="calendarPosition">
-        <option value="bottom-right">Bottom-right</option>
-        <option value="bottom-left">Bottom-left</option>
-        <option value="top-right">Top-right</option>
-        <option value="top-left">Top-left</option>
-        <option value="center">Center</option>
-      </select>
-    </div>
+    <button type="button" id="generateBtn">Create Wallpaper</button>
+    <a id="downloadLink" style="display:none; margin-top: 10px; color: #fff; text-decoration: underline;">Download Wallpaper</a>
+  </form>
 
-    <div class="checkbox-group">
-      <input type="checkbox" id="bw"> <label for="bw">Black & White</label><br>
-      <input type="checkbox" id="blur"> <label for="blur">Blur</label><br>
-      <input type="checkbox" id="overlay"> <label for="overlay">Apply color overlay</label>
-      <input type="color" id="overlayColor" value="#000000">
-    </div>
+  <div id="wallpaperGallery"></div>
 
-    <button onclick="generateWallpaper()">Generate Wallpaper</button>
-    <a id="downloadLink" style="display:none;">Download Wallpaper</a>
-  </div>
-
-  <canvas id="wallpaperCanvas"></canvas>
+  <canvas id="canvas" width="1024" height="768"></canvas>
 
   <script>
-    function generateWallpaper() {
-      const fileInput = document.getElementById('imageUpload');
-      const canvas = document.getElementById('wallpaperCanvas');
-      const ctx = canvas.getContext('2d');
-      const size = document.getElementById('wallpaperSize').value.split('x');
-      const crop = document.getElementById('crop').value;
+let currentImage = null;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
-      if (!fileInput.files[0]) {
-        alert('Please upload an image.');
-        return;
-      }
+const sizeSelect = document.getElementById('sizeSelect');
+const imagePosition = document.getElementById('imagePosition');
+const fitMode = document.getElementById('fitMode');
+const fillColor = document.getElementById('fillColor');
 
-      const width = parseInt(size[0]);
-      const height = parseInt(size[1]);
-      canvas.width = width;
-      canvas.height = height;
+function drawWallpaper() {
+  const [cw, ch] = sizeSelect.value.split('x').map(Number);
+  canvas.width = cw;
+  canvas.height = ch;
+  ctx.clearRect(0, 0, cw, ch);
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          ctx.clearRect(0, 0, width, height);
+  if (!currentImage) return;
 
-          const gradient = ctx.createLinearGradient(0, 0, width, height);
-          gradient.addColorStop(0, '#5f2c82');
-          gradient.addColorStop(1, '#49a09d');
-          ctx.fillStyle = gradient;
-          ctx.fillRect(0, 0, width, height);
+  const iw = currentImage.width;
+  const ih = currentImage.height;
 
-          if (document.getElementById('overlay').checked) {
-            ctx.fillStyle = document.getElementById('overlayColor').value;
-            ctx.globalAlpha = 0.3;
-            ctx.fillRect(0, 0, width, height);
-            ctx.globalAlpha = 1.0;
-          }
+  ctx.fillStyle = fillColor?.value || '#000';
+  ctx.fillRect(0, 0, cw, ch);
 
-          const imgRatio = img.width / img.height;
-          const canvasRatio = width / height;
-          let drawWidth, drawHeight;
+  let drawWidth, drawHeight;
+  let dx = 0, dy = 0;
 
-          if (imgRatio > canvasRatio) {
-            drawHeight = height;
-            drawWidth = img.width * (height / img.height);
-          } else {
-            drawWidth = width;
-            drawHeight = img.height * (width / img.width);
-          }
+  if (fitMode.value === 'stretch') {
+    drawWidth = cw;
+    drawHeight = ch;
+  } else {
+    drawWidth = iw;
+    drawHeight = ih;
 
-          let offsetX = (width - drawWidth) / 2;
-          let offsetY = (height - drawHeight) / 2;
+    if (drawWidth > cw) drawWidth = cw;
+    if (drawHeight > ch) drawHeight = ch;
 
-          if (crop === 'left') { offsetX = 0; offsetY = 0; }
-          if (crop === 'right') { offsetX = width - drawWidth; offsetY = height - drawHeight; }
+    dx = (cw - drawWidth) / 2;
 
-          if (document.getElementById('bw').checked) ctx.filter = 'grayscale(100%)';
-          else if (document.getElementById('blur').checked) ctx.filter = 'blur(3px)';
-          else ctx.filter = 'none';
-
-          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
-          ctx.filter = 'none';
-
-          // TODO: Add calendar drawing here
-
-          const downloadLink = document.getElementById('downloadLink');
-          downloadLink.href = canvas.toDataURL('image/png');
-          downloadLink.download = 'wallpaper.png';
-          downloadLink.style.display = 'inline';
-          downloadLink.textContent = 'Download Wallpaper';
-        };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(fileInput.files[0]);
+    if (imagePosition.value === 'top') {
+      dy = 0;
+    } else if (imagePosition.value === 'center') {
+      dy = (ch - drawHeight) / 2;
+    } else if (imagePosition.value === 'bottom') {
+      dy = ch - drawHeight;
     }
+  }
+
+  ctx.drawImage(currentImage, 0, 0, drawWidth, drawHeight, dx, dy, drawWidth, drawHeight);
+}
+
+document.getElementById('imageUpload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      drawWallpaper();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('generateBtn').addEventListener('click', () => {
+  if (!currentImage) return alert("Please upload an image first.");
+  drawWallpaper();
+  const link = document.getElementById('downloadLink');
+  link.href = canvas.toDataURL();
+  link.style.display = 'inline-block';
+  link.download = `wallpaper-${Date.now()}.png`;
+});
+
+const wallpapers = [
+  { name: "Nature 1", category: "Nature", file: "wallpapers/nature1.jpg" },
+  { name: "City 1", category: "City", file: "wallpapers/city1.jpg" },
+  { name: "Abstract 1", category: "Abstract", file: "wallpapers/abstract1.jpg" }
+];
+
+const gallery = document.getElementById('wallpaperGallery');
+const categorySelect = document.getElementById('wallpaperCategory');
+
+function renderGallery(filter = "all") {
+  gallery.innerHTML = "";
+  wallpapers
+    .filter(wp => filter === "all" || wp.category === filter)
+    .forEach(wp => {
+      const img = document.createElement("img");
+      img.src = wp.file;
+      img.alt = wp.name;
+      img.title = wp.name;
+      img.onclick = () => {
+        const loaded = new Image();
+        loaded.onload = () => {
+          currentImage = loaded;
+          drawWallpaper();
+        };
+        loaded.src = wp.file;
+      };
+      gallery.appendChild(img);
+    });
+}
+
+categorySelect.addEventListener("change", e => {
+  renderGallery(e.target.value);
+});
+
+renderGallery();
   </script>
 </body>
 </html>
-
-
