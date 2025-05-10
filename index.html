@@ -93,6 +93,7 @@
     <select id="fitMode">
       <option value="original">Use Original Image</option>
       <option value="stretch">Stretch to Fill</option>
+      <option value="cover">Cover (Crop to Fill)</option>
     </select>
 
     <label for="fillColor">Background Color:</label>
@@ -124,37 +125,54 @@ function drawWallpaper() {
 
   if (!currentImage) return;
 
-  const iw = currentImage.width;
-  const ih = currentImage.height;
-
   ctx.fillStyle = fillColor?.value || '#000';
   ctx.fillRect(0, 0, cw, ch);
 
-  let drawWidth, drawHeight;
-  let dx = 0, dy = 0;
+  let sx = 0, sy = 0, sw = currentImage.width, sh = currentImage.height;
+  let dx = 0, dy = 0, dw = cw, dh = ch;
 
   if (fitMode.value === 'stretch') {
-    drawWidth = cw;
-    drawHeight = ch;
+    // Default: fill entire canvas
+    sw = currentImage.width;
+    sh = currentImage.height;
+  } else if (fitMode.value === 'cover') {
+    // Crop image to cover the canvas (like background-size: cover)
+    const imageRatio = currentImage.width / currentImage.height;
+    const canvasRatio = cw / ch;
+
+    if (imageRatio > canvasRatio) {
+      // image is wider, crop left/right
+      sh = currentImage.height;
+      sw = sh * canvasRatio;
+      sx = (currentImage.width - sw) / 2;
+    } else {
+      // image is taller, crop top/bottom
+      sw = currentImage.width;
+      sh = sw / canvasRatio;
+      if (imagePosition.value === 'top') {
+        sy = 0;
+      } else if (imagePosition.value === 'bottom') {
+        sy = currentImage.height - sh;
+      } else {
+        sy = (currentImage.height - sh) / 2;
+      }
+    }
   } else {
-    drawWidth = iw;
-    drawHeight = ih;
-
-    if (drawWidth > cw) drawWidth = cw;
-    if (drawHeight > ch) drawHeight = ch;
-
-    dx = (cw - drawWidth) / 2;
+    // Original size placement
+    dw = currentImage.width;
+    dh = currentImage.height;
+    dx = (cw - dw) / 2;
 
     if (imagePosition.value === 'top') {
       dy = 0;
-    } else if (imagePosition.value === 'center') {
-      dy = (ch - drawHeight) / 2;
     } else if (imagePosition.value === 'bottom') {
-      dy = ch - drawHeight;
+      dy = ch - dh;
+    } else {
+      dy = (ch - dh) / 2;
     }
   }
 
-  ctx.drawImage(currentImage, 0, 0, drawWidth, drawHeight, dx, dy, drawWidth, drawHeight);
+  ctx.drawImage(currentImage, sx, sy, sw, sh, dx, dy, dw, dh);
 }
 
 document.getElementById('imageUpload').addEventListener('change', (e) => {
@@ -219,3 +237,4 @@ renderGallery();
   </script>
 </body>
 </html>
+
