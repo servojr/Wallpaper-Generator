@@ -107,39 +107,38 @@ function drawWallpaper() {
   ctx.clearRect(0, 0, cw, ch);
 
   if (!currentImage) return;
+
   const iw = currentImage.width;
   const ih = currentImage.height;
 
   ctx.fillStyle = fillColor?.value || '#000';
   ctx.fillRect(0, 0, cw, ch);
 
-  let drawWidth = iw;
-  let drawHeight = ih;
-  let dx = 0;
-  let dy = 0;
+  let drawWidth, drawHeight;
+  let dx = 0, dy = 0;
 
   if (fitMode.value === 'stretch') {
     drawWidth = cw;
     drawHeight = ch;
-    dx = 0;
-    dy = 0;
   } else {
     drawWidth = iw;
     drawHeight = ih;
 
+    if (drawWidth > cw) drawWidth = cw;
+    if (drawHeight > ch) drawHeight = ch;
+
+    dx = (cw - drawWidth) / 2;
+
     if (imagePosition.value === 'top') {
-      dx = (cw - drawWidth) / 2;
       dy = 0;
     } else if (imagePosition.value === 'center') {
-      dx = (cw - drawWidth) / 2;
       dy = (ch - drawHeight) / 2;
     } else if (imagePosition.value === 'bottom') {
-      dx = (cw - drawWidth) / 2;
       dy = ch - drawHeight;
     }
   }
 
-  ctx.drawImage(currentImage, dx, dy, drawWidth, drawHeight);
+  ctx.drawImage(currentImage, 0, 0, drawWidth, drawHeight, dx, dy, drawWidth, drawHeight);
 }
 
 document.getElementById('imageUpload').addEventListener('change', (e) => {
@@ -168,5 +167,3 @@ document.getElementById('generateBtn').addEventListener('click', () => {
   </script>
 </body>
 </html>
-
-
