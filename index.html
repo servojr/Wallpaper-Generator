@@ -132,7 +132,7 @@
 
     <button type="button" id="createBtn">Create Wallpaper</button>
     <button type="button" id="saveBtn">Save</button>
-    <button type="button" id="downloadLink">Download Wallpaper</button>
+    <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
     <button type="button" id="clearAllBtn">Clear All</button>
   </form>
 
@@ -146,6 +146,7 @@
     const ctx = canvas.getContext('2d');
     const createBtn = document.getElementById('createBtn');
     const downloadLink = document.getElementById('downloadLink');
+    const saveBtn = document.getElementById('saveBtn');
 
     let image = new Image();
 
@@ -217,9 +218,22 @@
         ctx.fillText(text, w / 2, yText);
       }
 
-      downloadLink.href = canvas.toDataURL('image/png');
+      const dataURL = canvas.toDataURL('image/png');
+      downloadLink.href = dataURL;
       downloadLink.download = `wallpaper-${Date.now()}.png`;
       downloadLink.style.display = 'inline-block';
+
+      saveBtn.onclick = () => {
+        try {
+          const saved = JSON.parse(localStorage.getItem('myWallpapers') || '[]');
+          if (saved.length >= 20) return showToast("Max 20 saves reached.");
+          saved.push(dataURL);
+          localStorage.setItem('myWallpapers', JSON.stringify(saved));
+          showToast("Wallpaper saved!");
+        } catch (err) {
+          showToast("Save failed. Storage full or unsupported.");
+        }
+      };
     });
 
     function showToast(msg) {
@@ -231,5 +245,6 @@
   </script>
 </body>
 </html>
+
 
 
