@@ -49,6 +49,33 @@
       border: none;
       cursor: pointer;
     }
+    #toast {
+      visibility: hidden;
+      min-width: 250px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 8px;
+      padding: 12px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 16px;
+    }
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein {
+      from {bottom: 0; opacity: 0;}
+      to {bottom: 30px; opacity: 1;}
+    }
+    @keyframes fadeout {
+      from {bottom: 30px; opacity: 1;}
+      to {bottom: 0; opacity: 0;}
+    }
   </style>
 </head>
 <body>
@@ -87,6 +114,7 @@
   <button id="clearAllBtn">Clear All</button>
   <canvas id="canvas" width="1920" height="1080"></canvas>
   <div id="myCreations"></div>
+  <div id="toast">Please upload an image first.</div>
 
   <script>
     const canvas = document.getElementById("canvas");
@@ -97,8 +125,17 @@
     const saveBtn = document.getElementById("saveBtn");
     const clearAllBtn = document.getElementById("clearAllBtn");
     const myCreations = document.getElementById("myCreations");
+    const toast = document.getElementById("toast");
 
     let currentImage = null;
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.className = "show";
+      setTimeout(() => {
+        toast.className = toast.className.replace("show", "");
+      }, 3000);
+    }
 
     upload.addEventListener("change", (e) => {
       const file = e.target.files[0];
@@ -112,7 +149,7 @@
     });
 
     function drawWallpaper() {
-      if (!currentImage) return;
+      if (!currentImage) return showToast("Please upload an image before creating your wallpaper.");
 
       const affirmationText = document.getElementById("affirmationText").value;
       const position = document.getElementById("affirmationPosition").value;
@@ -214,6 +251,7 @@
   </script>
 </body>
 </html>
+
 
 
 
