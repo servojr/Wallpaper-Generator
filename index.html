@@ -170,6 +170,7 @@ imageUpload.addEventListener('change', (e) => {
       currentImage = img;
       dragPosition = { x: null, y: null };
       userHasDragged = false;
+      drawWallpaper();
     };
     img.src = event.target.result;
   };
@@ -263,69 +264,7 @@ generateBtn.addEventListener('click', () => {
   downloadLink.style.display = 'inline-block';
 });
 
-function drawWallpaper() {
-  const [w, h] = sizeSelect.value.split('x').map(Number);
-  canvas.width = w;
-  canvas.height = h;
-  ctx.clearRect(0, 0, w, h);
-
-  const fitMode = fitModeSelect.value;
-  const fillColor = fillColorPicker.value;
-  const blurStyle = blurFillMode.value;
-  const alignment = document.getElementById('imagePosition').value;
-
-  // Background fill
-  if (fitMode === 'fit-color') {
-    ctx.fillStyle = fillColor;
-    ctx.fillRect(0, 0, w, h);
-  } else if (fitMode === 'fit-custom' && backgroundImage) {
-    ctx.save();
-    ctx.fillStyle = document.getElementById('customBackgroundColor').value;
-    ctx.fillRect(0, 0, w, h);
-    ctx.globalAlpha = parseFloat(document.getElementById('customBackgroundOpacity').value);
-    ctx.filter = document.getElementById('blur').checked ? 'blur(20px)' : 'none';
-    ctx.drawImage(backgroundImage, 0, 0, w, h);
-    ctx.globalAlpha = 1;
-    ctx.restore();
-  } else if (fitMode === 'fit-blur' && currentImage) {
-    ctx.save();
-    ctx.filter = 'blur(20px)';
-    if (blurStyle === 'tile') {
-      const pattern = ctx.createPattern(currentImage, 'repeat');
-      ctx.fillStyle = pattern;
-      ctx.fillRect(0, 0, w, h);
-    } else if (blurStyle === 'stretch') {
-      ctx.drawImage(currentImage, 0, 0, w, h);
-    } else {
-      const scale = Math.max(w / currentImage.width, h / currentImage.height);
-      const iw = currentImage.width * scale;
-      const ih = currentImage.height * scale;
-      const ix = (w - iw) / 2;
-      const iy = (h - ih) / 2;
-      ctx.drawImage(currentImage, ix, iy, iw, ih);
-    }
-    ctx.restore();
-  }
-
-  // Foreground image placement
-  if (currentImage) {
-    if (fitMode === 'original') {
-      const imgW = currentImage.width;
-      const imgH = currentImage.height;
-      const x = userHasDragged && dragPosition.x !== null ? dragPosition.x : (w - imgW) / 2;
-      const y = userHasDragged && dragPosition.y !== null ? dragPosition.y : alignment === 'top' ? 0 : alignment === 'bottom' ? h - imgH : (h - imgH) / 2;
-      ctx.drawImage(currentImage, x, y);
-    } else if (fitMode === 'crop') {
-      const scale = Math.min(w / currentImage.width, h / currentImage.height);
-      const imgW = currentImage.width * scale;
-      const imgH = currentImage.height * scale;
-      let x = userHasDragged && dragPosition.x !== null ? dragPosition.x : (w - imgW) / 2;
-      let y = userHasDragged && dragPosition.y !== null ? dragPosition.y : alignment === 'top' ? 0 : alignment === 'bottom' ? h - imgH : (h - imgH) / 2;
-      ctx.drawImage(currentImage, x, y, imgW, imgH);
-    }
-  }
-  }
-
+function drawWallpaper() {$1
   // Effects
   let imageData = ctx.getImageData(0, 0, w, h);
   let data = imageData.data;
@@ -360,6 +299,7 @@ function drawWallpaper() {
 </script>
 </body>
 </html>
+
 
 
 
