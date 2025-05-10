@@ -1,204 +1,214 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Desktop Wallpaper Generator</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Custom Wallpaper Generator</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: #1e1e2f;
-      color: #eee;
-      text-align: center;
       margin: 0;
-      padding: 2em;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(to right, #5f2c82, #49a09d);
+      color: #fff;
+      text-align: center;
+    }
+    .container {
+      max-width: 600px;
+      margin: 50px auto;
+      background-color: rgba(0, 0, 0, 0.5);
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+    input, select, label, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      font-size: 16px;
+    }
+    input[type="checkbox"] {
+      width: auto;
+      display: inline-block;
+      margin-right: 10px;
+    }
+    .checkbox-group {
+      text-align: left;
+      margin: 10px 0;
+    }
+    button {
+      background-color: #00c896;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #00b386;
     }
     canvas {
       display: block;
-      margin: 1em auto;
-      border: 2px solid #555;
+      margin: 40px auto;
+      border: 2px solid #fff;
+      max-width: 100%;
     }
-    button, input, select {
-      margin: 0.5em;
-      padding: 0.5em 1em;
-    }
-    #myCreations {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 1em;
-    }
-    .creation-wrapper {
-      position: relative;
-      margin: 0.5em;
-    }
-    .creation-wrapper img {
-      height: 100px;
-      cursor: pointer;
-    }
-    .delete-btn {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: red;
-      color: white;
-      border: none;
-      cursor: pointer;
+    #downloadLink {
+      display: inline-block;
+      margin-top: 20px;
+      color: #fff;
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
-  <h1>🖼️ My Desktop Wallpaper Generator</h1>
-  <input type="file" id="upload" accept="image/*">
-  <br>
-  <button id="createBtn">Create Wallpaper</button>
-  <button id="saveBtn">Save</button>
-  <button id="downloadLink">Download Wallpaper</button>
-  <button id="clearAllBtn">Clear All</button>
-  <br>
-  <canvas id="canvas" width="1920" height="1080"></canvas>
-  <div id="myCreations"></div>
+  <div class="container">
+    <h1>Wallpaper Generator</h1>
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <label for="wallpaperSize">Wallpaper Size:</label>
+    <select id="wallpaperSize">
+      <option value="1024x768">1024x768</option>
+      <option value="1280x1024">1280x1024</option>
+      <option value="1600x1200">1600x1200</option>
+      <option value="1920x1080">1920x1080</option>
+      <option value="2560x1440">2560x1440</option>
+      <option value="3840x2160">3840x2160</option>
+    </select>
+
+    <label for="crop">Crop Position:</label>
+    <select id="crop">
+      <option value="center">Center</option>
+      <option value="left">Left/Top</option>
+      <option value="right">Right/Bottom</option>
+    </select>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="calendar"> <label for="calendar">Include Calendar</label>
+      <label for="calendarMonth">Month:</label>
+      <select id="calendarMonth">
+        <option value="0">January</option>
+        <option value="1">February</option>
+        <option value="2">March</option>
+        <option value="3">April</option>
+        <option value="4">May</option>
+        <option value="5">June</option>
+        <option value="6">July</option>
+        <option value="7">August</option>
+        <option value="8">September</option>
+        <option value="9">October</option>
+        <option value="10">November</option>
+        <option value="11">December</option>
+      </select>
+
+      <label for="calendarYear">Year:</label>
+      <select id="calendarYear">
+        <option>2024</option>
+        <option selected>2025</option>
+        <option>2026</option>
+        <option>2027</option>
+      </select>
+
+      <label for="calendarColor">Calendar Color:</label>
+      <input type="color" id="calendarColor" value="#ffffff">
+
+      <label for="calendarPosition">Calendar Position:</label>
+      <select id="calendarPosition">
+        <option value="bottom-right">Bottom-right</option>
+        <option value="bottom-left">Bottom-left</option>
+        <option value="top-right">Top-right</option>
+        <option value="top-left">Top-left</option>
+        <option value="center">Center</option>
+      </select>
+    </div>
+
+    <div class="checkbox-group">
+      <input type="checkbox" id="bw"> <label for="bw">Black & White</label><br>
+      <input type="checkbox" id="blur"> <label for="blur">Blur</label><br>
+      <input type="checkbox" id="overlay"> <label for="overlay">Apply color overlay</label>
+      <input type="color" id="overlayColor" value="#000000">
+    </div>
+
+    <button onclick="generateWallpaper()">Generate Wallpaper</button>
+    <a id="downloadLink" style="display:none;">Download Wallpaper</a>
+  </div>
+
+  <canvas id="wallpaperCanvas"></canvas>
 
   <script>
-    window.addEventListener('DOMContentLoaded', () => {
-      const canvas = document.getElementById('canvas');
+    function generateWallpaper() {
+      const fileInput = document.getElementById('imageUpload');
+      const canvas = document.getElementById('wallpaperCanvas');
       const ctx = canvas.getContext('2d');
-      const upload = document.getElementById('upload');
-      const downloadLink = document.getElementById('downloadLink');
-      const myCreations = document.getElementById('myCreations');
-      const createBtn = document.getElementById('createBtn');
-      const dbName = 'wallpaperDB';
-      const storeName = 'creations';
-      let db, currentImage = null;
+      const size = document.getElementById('wallpaperSize').value.split('x');
+      const crop = document.getElementById('crop').value;
 
-      upload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+      if (!fileInput.files[0]) {
+        alert('Please upload an image.');
+        return;
+      }
+
+      const width = parseInt(size[0]);
+      const height = parseInt(size[1]);
+      canvas.width = width;
+      canvas.height = height;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
         const img = new Image();
-        img.onload = () => {
-          currentImage = img;
-          drawWallpaper();
+        img.onload = function() {
+          ctx.clearRect(0, 0, width, height);
+
+          const gradient = ctx.createLinearGradient(0, 0, width, height);
+          gradient.addColorStop(0, '#5f2c82');
+          gradient.addColorStop(1, '#49a09d');
+          ctx.fillStyle = gradient;
+          ctx.fillRect(0, 0, width, height);
+
+          if (document.getElementById('overlay').checked) {
+            ctx.fillStyle = document.getElementById('overlayColor').value;
+            ctx.globalAlpha = 0.3;
+            ctx.fillRect(0, 0, width, height);
+            ctx.globalAlpha = 1.0;
+          }
+
+          const imgRatio = img.width / img.height;
+          const canvasRatio = width / height;
+          let drawWidth, drawHeight;
+
+          if (imgRatio > canvasRatio) {
+            drawHeight = height;
+            drawWidth = img.width * (height / img.height);
+          } else {
+            drawWidth = width;
+            drawHeight = img.height * (width / img.width);
+          }
+
+          let offsetX = (width - drawWidth) / 2;
+          let offsetY = (height - drawHeight) / 2;
+
+          if (crop === 'left') { offsetX = 0; offsetY = 0; }
+          if (crop === 'right') { offsetX = width - drawWidth; offsetY = height - drawHeight; }
+
+          if (document.getElementById('bw').checked) ctx.filter = 'grayscale(100%)';
+          else if (document.getElementById('blur').checked) ctx.filter = 'blur(3px)';
+          else ctx.filter = 'none';
+
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
+          ctx.filter = 'none';
+
+          // TODO: Add calendar drawing here
+
+          const downloadLink = document.getElementById('downloadLink');
+          downloadLink.href = canvas.toDataURL('image/png');
+          downloadLink.download = 'wallpaper.png';
+          downloadLink.style.display = 'inline';
+          downloadLink.textContent = 'Download Wallpaper';
         };
-        img.src = URL.createObjectURL(file);
-      });
-
-      function drawWallpaper() {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        if (!currentImage) return;
-        const aspect = currentImage.width / currentImage.height;
-        let newW = canvas.width;
-        let newH = newW / aspect;
-        if (newH > canvas.height) {
-          newH = canvas.height;
-          newW = newH * aspect;
-        }
-        const x = (canvas.width - newW) / 2;
-        const y = (canvas.height - newH) / 2;
-        ctx.drawImage(currentImage, x, y, newW, newH);
-      }
-
-      function openDB() {
-        return new Promise((resolve, reject) => {
-          const request = indexedDB.open(dbName, 1);
-          request.onerror = (e) => reject(e);
-          request.onsuccess = (e) => {
-            db = e.target.result;
-            resolve();
-          };
-          request.onupgradeneeded = (e) => {
-            const db = e.target.result;
-            if (!db.objectStoreNames.contains(storeName)) {
-              db.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true });
-            }
-          };
-        });
-      }
-
-      function saveToDB(dataUrl) {
-        return new Promise((resolve, reject) => {
-          const tx = db.transaction(storeName, 'readwrite');
-          const store = tx.objectStore(storeName);
-          const countReq = store.count();
-          countReq.onsuccess = () => {
-            if (countReq.result >= 20) {
-              alert("You've reached the limit of 20 saved wallpapers.");
-              return reject();
-            }
-            const req = store.add({ image: dataUrl });
-            req.onsuccess = () => resolve();
-            req.onerror = (e) => reject(e);
-          };
-          countReq.onerror = (e) => reject(e);
-        });
-      }
-
-      function loadFromDB() {
-        const tx = db.transaction(storeName, 'readonly');
-        const store = tx.objectStore(storeName);
-        const req = store.getAll();
-        req.onsuccess = () => {
-          myCreations.innerHTML = '';
-          req.result.forEach((entry) => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'creation-wrapper';
-            const img = document.createElement('img');
-            img.src = entry.image;
-            img.onclick = () => {
-              const i = new Image();
-              i.onload = () => { currentImage = i; drawWallpaper(); };
-              i.src = entry.image;
-            };
-            const del = document.createElement('button');
-            del.className = 'delete-btn';
-            del.innerText = '×';
-            del.onclick = () => deleteFromDB(entry.id);
-            wrapper.appendChild(img);
-            wrapper.appendChild(del);
-            myCreations.appendChild(wrapper);
-          });
-        };
-        req.onerror = () => {
-          myCreations.innerHTML = '<p>Failed to load creations.</p>';
-        };
-      }
-
-      function deleteFromDB(id) {
-        const tx = db.transaction(storeName, 'readwrite');
-        const store = tx.objectStore(storeName);
-        store.delete(id);
-        tx.oncomplete = loadFromDB;
-      }
-
-      document.getElementById('clearAllBtn').addEventListener('click', () => {
-        if (confirm('Clear all saved wallpapers?')) {
-          const tx = db.transaction(storeName, 'readwrite');
-          tx.objectStore(storeName).clear().onsuccess = loadFromDB;
-        }
-      });
-
-      createBtn.addEventListener('click', drawWallpaper);
-
-      document.getElementById('saveBtn').addEventListener('click', () => {
-        try {
-          const test = ctx.getImageData(0, 0, canvas.width, canvas.height);
-          const hasContent = test.data.some(v => v !== 0);
-          if (!hasContent) return alert("Create a wallpaper first.");
-          const dataUrl = canvas.toDataURL("image/png");
-          saveToDB(dataUrl).then(loadFromDB).catch(() => alert("Save failed."));
-        } catch (e) {
-          alert("Error saving wallpaper: " + e.message);
-        }
-      });
-
-      downloadLink.addEventListener('click', () => {
-        const link = document.createElement('a');
-        link.download = `wallpaper-${Date.now()}.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-      });
-
-      openDB().then(loadFromDB).catch(err => alert("IndexedDB init failed."));
-    });
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(fileInput.files[0]);
+    }
   </script>
 </body>
 </html>
