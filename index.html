@@ -91,22 +91,30 @@
         img.onload = function() {
           ctx.clearRect(0, 0, width, height);
 
-          // Background gradient fill
+          // Background gradient
           const gradient = ctx.createLinearGradient(0, 0, width, height);
           gradient.addColorStop(0, '#5f2c82');
           gradient.addColorStop(1, '#49a09d');
           ctx.fillStyle = gradient;
           ctx.fillRect(0, 0, width, height);
 
-          // Resize image to fit within 600px width
-          const maxImageWidth = 600;
-          let imgWidth = maxImageWidth;
-          let imgHeight = img.height * (imgWidth / img.width);
+          // Scale and crop image to fill the canvas
+          const imgRatio = img.width / img.height;
+          const canvasRatio = width / height;
 
-          let x = (width - imgWidth) / 2;
-          let y = (height - imgHeight) / 2;
+          let drawWidth, drawHeight;
+          if (imgRatio > canvasRatio) {
+            drawHeight = height;
+            drawWidth = img.width * (height / img.height);
+          } else {
+            drawWidth = width;
+            drawHeight = img.height * (width / img.width);
+          }
 
-          ctx.drawImage(img, x, y, imgWidth, imgHeight);
+          const offsetX = (width - drawWidth) / 2;
+          const offsetY = (height - drawHeight) / 2;
+
+          ctx.drawImage(img, offsetX, offsetY, drawWidth, drawHeight);
 
           const downloadLink = document.getElementById('downloadLink');
           downloadLink.href = canvas.toDataURL('image/png');
