@@ -240,6 +240,7 @@ fitModeSelect.addEventListener('change', () => {
 });
 
 fitModeSelect.dispatchEvent(new Event('change'));
+document.getElementById('customBackgroundColor').addEventListener('change', drawWallpaper);
 
 generateBtn.addEventListener('click', () => {
   drawWallpaper();
