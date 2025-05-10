@@ -1,4 +1,4 @@
-<!-- Full updated HTML with Clear All + Delete + Multi-save fix -->
+<!-- Full updated HTML with Clear All + Delete + Multi-save fix + max 20 creations -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -199,6 +199,10 @@
     document.getElementById('saveBtn').addEventListener('click', () => {
       const data = canvas.toDataURL();
       let saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
+      if (saved.length >= 20) {
+        alert("You've reached the maximum of 20 saved wallpapers. Please delete one before saving another.");
+        return;
+      }
       saved.push(data);
       localStorage.setItem('wallpaperCreations', JSON.stringify(saved));
       loadCreations();
@@ -275,6 +279,7 @@
   </script>
 </body>
 </html>
+
 
 
 
