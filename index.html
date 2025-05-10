@@ -56,75 +56,268 @@
 </head>
 <body>
   <h1>🖼️ My Desktop Wallpaper Generator</h1>
+
   <form>
-    <!-- Existing Form Content -->
+    <button type="button" id="saveSettingsBtn">💾 Save Settings</button>
+
+    <label><input type="checkbox" id="togglePreview"> Show Wallpaper Preview</label>
+    
+    <label>Upload Image:</label>
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <label>Custom Background Image (optional):</label>
+    <input type="file" id="backgroundUpload" accept="image/*">
+
+    <label>Affirmation Text:</label>
+    <input type="text" id="affirmationText">
+
+    <label>Affirmation Position:</label>
+    <select id="affirmationPosition">
+      <option value="top">Top</option>
+      <option value="center">Center</option>
+      <option value="bottom" selected>Bottom</option>
+    </select>
+
+    <label>Wallpaper Size:</label>
+    <select id="sizeSelect">
+      <option value="1024x768">1024×768</option>
+      <option value="1280x1024">1280×1024</option>
+      <option value="1600x1200">1600×1200</option>
+      <option value="1920x1080">1920×1080 (HD)</option>
+      <option value="2560x1440">2560×1440 (QHD)</option>
+      <option value="3840x2160">3840×2160 (4K UHD)</option>
+    </select>
+
+    <label>File Format:</label>
+    <select id="formatSelect">
+      <option value="png" selected>PNG</option>
+      <option value="jpeg">JPEG</option>
+      <option value="webp">WEBP</option>
+    </select>
+
+    <label>Image Position:</label>
+    <select id="imagePosition">
+      <option value="top">Top</option>
+      <option value="center" selected>Center</option>
+      <option value="bottom">Bottom</option>
+    </select>
+
+    <label for="fitMode">Photo Fit Mode:</label>
+    <select id="fitMode">
+      <option value="crop" selected>Crop to Fill</option>
+      <option value="fit-color">Fit with Color</option>
+      <option value="fit-blur">Fit with Blurred Background</option>
+      <option value="fit-custom">Fit with Custom Background</option>
+    </select>
+
+    <label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
+    <select id="blurFillMode" style="display: none;">
+      <option value="zoom" selected>Zoom</option>
+      <option value="tile">Tile</option>
+      <option value="stretch">Stretch</option>
+    </select>
+
+    <label id="fillColorLabel" style="display: none;">Background Color:</label>
+    <input type="color" id="fillColor" value="#000000" style="display: none;">
+
+    <label>Optional Effects:</label>
+    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"><label for="desaturate">Black & White</label></div>
+    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"><label for="blur">Blur</label></div>
+    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"><label for="invert">Invert Colors</label></div>
+
     <button type="button" id="generateBtn">Create Wallpaper</button>
     <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
   </form>
+
   <img id="preview">
-  <canvas id="canvas"></canvas>
+  <canvas id="canvas" width="1024" height="768"></canvas>
+
   <script>
-    document.getElementById('generateBtn').addEventListener('click', () => {
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let currentImage = null;
+let backgroundImage = null;
+let dragPosition = { x: null, y: null };
+let isDragging = false;
 
-      const [width, height] = document.getElementById('sizeSelect').value.split('x').map(Number);
-      canvas.width = width;
-      canvas.height = height;
+const imageUpload = document.getElementById('imageUpload');
+const backgroundUpload = document.getElementById('backgroundUpload');
+const affirmationText = document.getElementById('affirmationText');
+const affirmationPosition = document.getElementById('affirmationPosition');
+const sizeSelect = document.getElementById('sizeSelect');
+const formatSelect = document.getElementById('formatSelect');
+const fitModeSelect = document.getElementById('fitMode');
+const blurFillMode = document.getElementById('blurFillMode');
+const fillColorPicker = document.getElementById('fillColor');
+const generateBtn = document.getElementById('generateBtn');
+const downloadLink = document.getElementById('downloadLink');
 
-      const imageUpload = document.getElementById('imageUpload');
-      const affirmationText = document.getElementById('affirmationText').value;
-      const affirmationPosition = document.getElementById('affirmationPosition').value;
-      const imagePosition = document.getElementById('imagePosition').value;
-      const format = document.getElementById('formatSelect').value;
-      const showPreview = document.getElementById('togglePreview').checked;
+imageUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      dragPosition = { x: null, y: null };
+    };
+    img.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 
-      if (!imageUpload.files[0]) return alert('Please upload an image.');
+backgroundUpload.addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const bg = new Image();
+    bg.onload = () => {
+      backgroundImage = bg;
+    };
+    bg.src = event.target.result;
+  };
+  reader.readAsDataURL(file);
+});
 
-      const img = new Image();
-      const reader = new FileReader();
+canvas.addEventListener('mousedown', (e) => {
+  isDragging = true;
+  dragPosition.x = e.offsetX;
+  dragPosition.y = e.offsetY;
+});
+canvas.addEventListener('mouseup', () => isDragging = false);
+canvas.addEventListener('mouseleave', () => isDragging = false);
+canvas.addEventListener('mousemove', (e) => {
+  if (!isDragging || !currentImage) return;
+  dragPosition.x = e.offsetX;
+  dragPosition.y = e.offsetY;
+  drawWallpaper();
+});
 
-      reader.onload = function (e) {
-        img.onload = function () {
-          ctx.clearRect(0, 0, canvas.width, canvas.height);
+document.getElementById('togglePreview').addEventListener('change', (e) => {
+  canvas.style.display = e.target.checked ? 'block' : 'none';
+});
 
-          let scale = Math.min(canvas.width / img.width, canvas.height / img.height);
-          let imgWidth = img.width * scale;
-          let imgHeight = img.height * scale;
-          let x = (canvas.width - imgWidth) / 2;
-          let y = 0;
+document.getElementById('saveSettingsBtn').addEventListener('click', () => {
+  localStorage.setItem('affirmationText', affirmationText.value);
+  localStorage.setItem('affirmationPosition', affirmationPosition.value);
+  localStorage.setItem('sizeSelect', sizeSelect.value);
+  localStorage.setItem('formatSelect', formatSelect.value);
+  localStorage.setItem('fitMode', fitModeSelect.value);
+  localStorage.setItem('blurFillMode', blurFillMode.value);
+  localStorage.setItem('fillColor', fillColorPicker.value);
+  localStorage.setItem('desaturate', document.getElementById('desaturate').checked);
+  localStorage.setItem('blur', document.getElementById('blur').checked);
+  localStorage.setItem('invert', document.getElementById('invert').checked);
+  alert('✅ Settings saved!');
+});
 
-          if (imagePosition === 'center') {
-            y = (canvas.height - imgHeight) / 2;
-          } else if (imagePosition === 'bottom') {
-            y = canvas.height - imgHeight;
-          }
+window.addEventListener('DOMContentLoaded', () => {
+  if (localStorage.getItem('affirmationText')) affirmationText.value = localStorage.getItem('affirmationText');
+  if (localStorage.getItem('affirmationPosition')) affirmationPosition.value = localStorage.getItem('affirmationPosition');
+  if (localStorage.getItem('sizeSelect')) sizeSelect.value = localStorage.getItem('sizeSelect');
+  if (localStorage.getItem('formatSelect')) formatSelect.value = localStorage.getItem('formatSelect');
+  if (localStorage.getItem('fitMode')) fitModeSelect.value = localStorage.getItem('fitMode');
+  if (localStorage.getItem('blurFillMode')) blurFillMode.value = localStorage.getItem('blurFillMode');
+  if (localStorage.getItem('fillColor')) fillColorPicker.value = localStorage.getItem('fillColor');
+  document.getElementById('desaturate').checked = localStorage.getItem('desaturate') === 'true';
+  document.getElementById('blur').checked = localStorage.getItem('blur') === 'true';
+  document.getElementById('invert').checked = localStorage.getItem('invert') === 'true';
+});
 
-          ctx.drawImage(img, x, y, imgWidth, imgHeight);
+generateBtn.addEventListener('click', () => {
+  drawWallpaper();
+  const format = formatSelect.value;
+  const dataURL = canvas.toDataURL(`image/${format}`);
+  downloadLink.href = dataURL;
+  downloadLink.download = `wallpaper-${Date.now()}.${format}`;
+  downloadLink.style.display = 'inline-block';
+});
 
-          if (affirmationText) {
-            ctx.font = 'bold 32px Segoe UI';
-            ctx.fillStyle = '#ffffff';
-            ctx.textAlign = 'center';
-            let textY = 40;
-            if (affirmationPosition === 'center') textY = canvas.height / 2;
-            else if (affirmationPosition === 'bottom') textY = canvas.height - 40;
-            ctx.fillText(affirmationText, canvas.width / 2, textY);
-          }
+function drawWallpaper() {
+  const [w, h] = sizeSelect.value.split('x').map(Number);
+  canvas.width = w;
+  canvas.height = h;
+  ctx.clearRect(0, 0, w, h);
 
-          const preview = document.getElementById('preview');
-          preview.src = canvas.toDataURL();
-          preview.style.display = showPreview ? 'block' : 'none';
+  const fitMode = fitModeSelect.value;
+  const fillColor = fillColorPicker.value;
+  const blurStyle = blurFillMode.value;
+  const alignment = document.getElementById('imagePosition').value;
 
-          const downloadLink = document.getElementById('downloadLink');
-          downloadLink.href = canvas.toDataURL('image/' + format);
-          downloadLink.style.display = 'inline-block';
-        }
-        img.src = e.target.result;
-      }
-      reader.readAsDataURL(imageUpload.files[0]);
-    });
-  </script>
+  // Background fill
+  if (fitMode === 'fit-color') {
+    ctx.fillStyle = fillColor;
+    ctx.fillRect(0, 0, w, h);
+  } else if (fitMode === 'fit-custom' && backgroundImage) {
+    ctx.save();
+    ctx.filter = document.getElementById('blur').checked ? 'blur(20px)' : 'none';
+    ctx.drawImage(backgroundImage, 0, 0, w, h);
+    ctx.restore();
+  } else if (fitMode === 'fit-blur' && currentImage) {
+    ctx.save();
+    ctx.filter = 'blur(20px)';
+    if (blurStyle === 'tile') {
+      const pattern = ctx.createPattern(currentImage, 'repeat');
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, w, h);
+    } else if (blurStyle === 'stretch') {
+      ctx.drawImage(currentImage, 0, 0, w, h);
+    } else {
+      const scale = Math.max(w / currentImage.width, h / currentImage.height);
+      const iw = currentImage.width * scale;
+      const ih = currentImage.height * scale;
+      const ix = (w - iw) / 2;
+      const iy = (h - ih) / 2;
+      ctx.drawImage(currentImage, ix, iy, iw, ih);
+    }
+    ctx.restore();
+  }
+
+  // Foreground image placement
+  if (currentImage) {
+    const scale = Math.min(w / currentImage.width, h / currentImage.height);
+    const imgW = currentImage.width * scale;
+    const imgH = currentImage.height * scale;
+    let x = dragPosition.x !== null ? dragPosition.x : (w - imgW) / 2;
+    let y = dragPosition.y !== null ? dragPosition.y : alignment === 'top' ? 0 : alignment === 'bottom' ? h - imgH : (h - imgH) / 2;
+    ctx.drawImage(currentImage, x, y, imgW, imgH);
+  }
+
+  // Effects
+  let imageData = ctx.getImageData(0, 0, w, h);
+  let data = imageData.data;
+  if (document.getElementById('desaturate').checked) {
+    for (let i = 0; i < data.length; i += 4) {
+      let avg = (data[i] + data[i+1] + data[i+2]) / 3;
+      data[i] = data[i+1] = data[i+2] = avg;
+    }
+  }
+  if (document.getElementById('invert').checked) {
+    for (let i = 0; i < data.length; i += 4) {
+      data[i] = 255 - data[i];
+      data[i+1] = 255 - data[i+1];
+      data[i+2] = 255 - data[i+2];
+    }
+  }
+  ctx.putImageData(imageData, 0, 0);
+
+  // Affirmation text
+  const text = affirmationText.value;
+  if (text) {
+    ctx.font = 'bold 48px Segoe UI';
+    ctx.fillStyle = '#ffffff';
+    ctx.strokeStyle = '#000000';
+    ctx.lineWidth = 3;
+    ctx.textAlign = 'center';
+    const y = affirmationPosition.value === 'top' ? 60 : affirmationPosition.value === 'center' ? h / 2 : h - 40;
+    ctx.strokeText(text, w / 2, y);
+    ctx.fillText(text, w / 2, y);
+  }
+}
+</script>
 </body>
 </html>
+
 
