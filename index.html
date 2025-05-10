@@ -87,13 +87,16 @@
   <button id="clearAllBtn">Clear All</button>
   <canvas id="canvas" width="1920" height="1080"></canvas>
   <div id="myCreations"></div>
+
   <script>
-    // FULLY FUNCTIONAL LOGIC RECONNECTED
     const canvas = document.getElementById("canvas");
     const ctx = canvas.getContext("2d");
     const upload = document.getElementById("upload");
     const downloadLink = document.getElementById("downloadLink");
     const createBtn = document.getElementById("createBtn");
+    const saveBtn = document.getElementById("saveBtn");
+    const clearAllBtn = document.getElementById("clearAllBtn");
+    const myCreations = document.getElementById("myCreations");
 
     let currentImage = null;
 
@@ -152,6 +155,52 @@
       }
     }
 
+    function updateSavedCreations() {
+      myCreations.innerHTML = "";
+      const items = JSON.parse(localStorage.getItem("savedWallpapers") || "[]");
+      items.forEach((dataUrl, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "creation-wrapper";
+
+        const img = document.createElement("img");
+        img.src = dataUrl;
+        img.onclick = () => {
+          const imgObj = new Image();
+          imgObj.onload = () => {
+            ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
+          };
+          imgObj.src = dataUrl;
+        };
+
+        const delBtn = document.createElement("button");
+        delBtn.innerText = "❌";
+        delBtn.className = "delete-btn";
+        delBtn.onclick = () => {
+          items.splice(index, 1);
+          localStorage.setItem("savedWallpapers", JSON.stringify(items));
+          updateSavedCreations();
+        };
+
+        wrapper.appendChild(img);
+        wrapper.appendChild(delBtn);
+        myCreations.appendChild(wrapper);
+      });
+    }
+
+    saveBtn.addEventListener("click", () => {
+      const dataUrl = canvas.toDataURL("image/png");
+      const items = JSON.parse(localStorage.getItem("savedWallpapers") || "[]");
+      if (items.length >= 20) items.shift();
+      items.push(dataUrl);
+      localStorage.setItem("savedWallpapers", JSON.stringify(items));
+      updateSavedCreations();
+    });
+
+    clearAllBtn.addEventListener("click", () => {
+      localStorage.removeItem("savedWallpapers");
+      updateSavedCreations();
+    });
+
     createBtn.addEventListener("click", drawWallpaper);
 
     downloadLink.addEventListener("click", () => {
@@ -160,9 +209,12 @@
       link.href = canvas.toDataURL("image/png");
       link.click();
     });
+
+    updateSavedCreations();
   </script>
 </body>
 </html>
+
 
 
 
