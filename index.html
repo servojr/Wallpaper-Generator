@@ -163,7 +163,23 @@
             y = canvas.height - img.height;
           }
 
-          ctx.drawImage(img, x, y);
+          // Scale image to fit canvas while maintaining aspect ratio
+          let scale = Math.min(canvas.width / img.width, canvas.height / img.height);
+          let imgWidth = img.width * scale;
+          let imgHeight = img.height * scale;
+
+          if (imagePosition === 'center') {
+            x = (canvas.width - imgWidth) / 2;
+            y = (canvas.height - imgHeight) / 2;
+          } else if (imagePosition === 'top') {
+            x = (canvas.width - imgWidth) / 2;
+            y = 0;
+          } else if (imagePosition === 'bottom') {
+            x = (canvas.width - imgWidth) / 2;
+            y = canvas.height - imgHeight;
+          }
+
+          ctx.drawImage(img, x, y, imgWidth, imgHeight);
 
           if (affirmationText) {
             ctx.font = 'bold 32px Segoe UI';
@@ -183,6 +199,3 @@
   </script>
 </body>
 </html>
-
-
-
