@@ -140,7 +140,10 @@
   <canvas id="canvas" width="1024" height="768"></canvas>
 
   <script>
-// Existing JS remains unchanged until drawWallpaper()
+let currentImage = null;
+let bgImage = null;
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
 
 function drawWallpaper() {
   const [w, h] = sizeSelect.value.split('x').map(Number);
@@ -148,40 +151,45 @@ function drawWallpaper() {
   canvas.height = h;
   ctx.clearRect(0, 0, w, h);
 
-  const fitMode = fitModeSelect.value;
-  const fillColor = fillColorPicker.value;
-  const blurStyle = blurFillMode.value;
-  const alignment = document.getElementById('imagePosition').value;
+  const fitMode = fitMode.value;
+  const alignment = imagePosition.value;
 
-  // Background fill code remains
-
-  // Foreground image placement
   if (currentImage) {
     if (fitMode === 'original') {
       const sourceW = Math.min(currentImage.width, w);
       const sourceH = Math.min(currentImage.height, h);
-
       let sourceX = Math.floor((currentImage.width - sourceW) / 2);
-      let sourceY;
-
-      if (alignment === 'top') {
-        sourceY = 0;
-      } else if (alignment === 'bottom') {
-        sourceY = currentImage.height - sourceH;
-      } else {
-        sourceY = Math.floor((currentImage.height - sourceH) / 2);
-      }
-
-      sourceX = Math.max(0, sourceX);
-      sourceY = Math.max(0, sourceY);
-
+      let sourceY = alignment === 'top' ? 0 : alignment === 'bottom' ? (currentImage.height - sourceH) : Math.floor((currentImage.height - sourceH) / 2);
       ctx.drawImage(currentImage, sourceX, sourceY, sourceW, sourceH, 0, 0, w, h);
-    } else if (fitMode === 'crop') {
-      // Crop logic remains unchanged
+    } else {
+      ctx.drawImage(currentImage, 0, 0, w, h);
     }
   }
-  // Rest of drawWallpaper() remains unchanged
 }
-</script>
+
+document.getElementById('imageUpload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const img = new Image();
+    img.onload = () => {
+      currentImage = img;
+      drawWallpaper();
+    };
+    img.src = reader.result;
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('generateBtn').addEventListener('click', () => {
+  if (!currentImage) return alert("Please upload an image first.");
+  drawWallpaper();
+  const link = document.getElementById('downloadLink');
+  link.href = canvas.toDataURL();
+  link.style.display = 'inline-block';
+  link.download = `wallpaper-${Date.now()}.png`;
+});
+  </script>
 </body>
 </html>
