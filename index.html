@@ -110,8 +110,10 @@
   <option value="fit-custom">Fit with Custom Background</option>
 </select>
 
-<label id="fitCustomColorLabel" style="display: none;">Background Fill Color (for Custom Background):</label>
-<input type="color" id="customBackgroundColor" value="#000000" style="display: none;">
+$1
+
+<label id="customBackgroundOpacityLabel" style="display: none;">Background Image Opacity:</label>
+<input type="range" id="customBackgroundOpacity" min="0" max="1" step="0.01" value="1" style="display: none;">
 
     <label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
     <select id="blurFillMode" style="display: none;">
@@ -230,17 +232,22 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 fitModeSelect.addEventListener('change', () => {
+  const opacitySlider = document.getElementById('customBackgroundOpacity');
+  const opacityLabel = document.getElementById('customBackgroundOpacityLabel');
   const mode = fitModeSelect.value;
   document.getElementById('blurFillMode').style.display = mode === 'fit-blur' ? 'block' : 'none';
   document.getElementById('blurFillModeLabel').style.display = mode === 'fit-blur' ? 'block' : 'none';
   document.getElementById('fillColor').style.display = mode === 'fit-color' ? 'block' : 'none';
   document.getElementById('fillColorLabel').style.display = mode === 'fit-color' ? 'block' : 'none';
   document.getElementById('customBackgroundColor').style.display = mode === 'fit-custom' ? 'block' : 'none';
+  document.getElementById('customBackgroundOpacityLabel').style.display = mode === 'fit-custom' ? 'block' : 'none';
+  document.getElementById('customBackgroundOpacity').style.display = mode === 'fit-custom' ? 'block' : 'none';
   document.getElementById('fitCustomColorLabel').style.display = mode === 'fit-custom' ? 'block' : 'none';
 });
 
 fitModeSelect.dispatchEvent(new Event('change'));
 document.getElementById('customBackgroundColor').addEventListener('change', drawWallpaper);
+document.getElementById('customBackgroundOpacity').addEventListener('input', drawWallpaper);
 
 generateBtn.addEventListener('click', () => {
   drawWallpaper();
@@ -270,8 +277,10 @@ function drawWallpaper() {
     ctx.save();
     ctx.fillStyle = document.getElementById('customBackgroundColor').value;
     ctx.fillRect(0, 0, w, h);
+    ctx.globalAlpha = parseFloat(document.getElementById('customBackgroundOpacity').value);
     ctx.filter = document.getElementById('blur').checked ? 'blur(20px)' : 'none';
     ctx.drawImage(backgroundImage, 0, 0, w, h);
+    ctx.globalAlpha = 1;
     ctx.restore();
   } else if (fitMode === 'fit-blur' && currentImage) {
     ctx.save();
