@@ -102,13 +102,10 @@
       <option value="bottom">Bottom</option>
     </select>
 
-    <label for="fitMode">Photo Fit Mode:</label>
-    <select id="fitMode">
-      <option value="crop" selected>Crop to Fill</option>
-      <option value="fit-color">Fit with Color</option>
-      <option value="fit-blur">Fit with Blurred Background</option>
-      <option value="fit-custom">Fit with Custom Background</option>
-    </select>
+    $1
+
+<label id="fitCustomColorLabel" style="display: none;">Background Fill Color (for Custom Background):</label>
+<input type="color" id="customBackgroundColor" value="#000000" style="display: none;">
 
     <label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
     <select id="blurFillMode" style="display: none;">
@@ -226,6 +223,18 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('invert').checked = localStorage.getItem('invert') === 'true';
 });
 
+fitModeSelect.addEventListener('change', () => {
+  const mode = fitModeSelect.value;
+  document.getElementById('blurFillMode').style.display = mode === 'fit-blur' ? 'block' : 'none';
+  document.getElementById('blurFillModeLabel').style.display = mode === 'fit-blur' ? 'block' : 'none';
+  document.getElementById('fillColor').style.display = mode === 'fit-color' ? 'block' : 'none';
+  document.getElementById('fillColorLabel').style.display = mode === 'fit-color' ? 'block' : 'none';
+  document.getElementById('customBackgroundColor').style.display = mode === 'fit-custom' ? 'block' : 'none';
+  document.getElementById('fitCustomColorLabel').style.display = mode === 'fit-custom' ? 'block' : 'none';
+});
+
+fitModeSelect.dispatchEvent(new Event('change'));
+
 generateBtn.addEventListener('click', () => {
   drawWallpaper();
   const format = formatSelect.value;
@@ -253,6 +262,8 @@ function drawWallpaper() {
   } else if (fitMode === 'fit-custom' && backgroundImage) {
     ctx.save();
     ctx.filter = document.getElementById('blur').checked ? 'blur(20px)' : 'none';
+    ctx.fillStyle = document.getElementById('customBackgroundColor').value;
+    ctx.fillRect(0, 0, w, h);
     ctx.drawImage(backgroundImage, 0, 0, w, h);
     ctx.restore();
   } else if (fitMode === 'fit-blur' && currentImage) {
