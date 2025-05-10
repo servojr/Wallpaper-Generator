@@ -57,8 +57,36 @@
 <body>
   <h1>🖼️ My Desktop Wallpaper Generator</h1>
 
-  <!-- Form omitted for brevity -->
-  <!-- Keep all your current form inputs here -->
+  <form>
+    <label for="imageUpload">Upload Image:</label>
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <label for="sizeSelect">Wallpaper Size:</label>
+    <select id="sizeSelect">
+      <option value="1024x768">1024×768</option>
+      <option value="1920x1080">1920×1080 (Full HD)</option>
+      <option value="3840x2160">3840×2160 (4K UHD)</option>
+    </select>
+
+    <label for="imagePosition">Image Position:</label>
+    <select id="imagePosition">
+      <option value="top">Top</option>
+      <option value="center" selected>Center</option>
+      <option value="bottom">Bottom</option>
+    </select>
+
+    <label for="fitMode">Photo Fit Mode:</label>
+    <select id="fitMode">
+      <option value="original">Use Original Image</option>
+      <option value="stretch">Stretch to Fill</option>
+    </select>
+
+    <label for="fillColor">Background Color:</label>
+    <input type="color" id="fillColor" value="#000000">
+
+    <button type="button" id="generateBtn">Create Wallpaper</button>
+    <a id="downloadLink" style="display:none; margin-top: 10px; color: #fff; text-decoration: underline;">Download Wallpaper</a>
+  </form>
 
   <canvas id="canvas" width="1024" height="768"></canvas>
 
@@ -67,33 +95,50 @@ let currentImage = null;
 const canvas = document.getElementById('canvas');
 const ctx = canvas.getContext('2d');
 
+const sizeSelect = document.getElementById('sizeSelect');
+const imagePosition = document.getElementById('imagePosition');
+const fitMode = document.getElementById('fitMode');
+const fillColor = document.getElementById('fillColor');
+
 function drawWallpaper() {
   const [cw, ch] = sizeSelect.value.split('x').map(Number);
   canvas.width = cw;
   canvas.height = ch;
   ctx.clearRect(0, 0, cw, ch);
 
-  const fitMode = fitMode.value;
-  const alignment = imagePosition.value;
+  if (!currentImage) return;
+  const iw = currentImage.width;
+  const ih = currentImage.height;
+  const aspectRatio = iw / ih;
 
-  if (currentImage) {
-    const iw = currentImage.width;
-    const ih = currentImage.height;
+  ctx.fillStyle = fillColor?.value || '#000';
+  ctx.fillRect(0, 0, cw, ch);
 
-    if (fitMode === 'original') {
-      // Use the original image size and align vertically
-      let offsetY = 0;
-      if (ih < ch) {
-        if (alignment === 'center') offsetY = (ch - ih) / 2;
-        else if (alignment === 'bottom') offsetY = ch - ih;
-      }
-      ctx.fillStyle = fillColor?.value || '#000';
-      ctx.fillRect(0, 0, cw, ch);
-      ctx.drawImage(currentImage, (cw - iw) / 2, offsetY);
-    } else {
-      ctx.drawImage(currentImage, 0, 0, cw, ch);
+  let drawWidth = iw;
+  let drawHeight = ih;
+  let dx = 0;
+  let dy = 0;
+
+  if (fitMode.value === 'stretch') {
+    drawWidth = cw;
+    drawHeight = ch;
+  } else {
+    if (iw > cw) drawWidth = cw;
+    if (ih > ch) drawHeight = ch;
+
+    if (imagePosition.value === 'center') {
+      dx = (cw - drawWidth) / 2;
+      dy = (ch - drawHeight) / 2;
+    } else if (imagePosition.value === 'top') {
+      dx = (cw - drawWidth) / 2;
+      dy = 0;
+    } else if (imagePosition.value === 'bottom') {
+      dx = (cw - drawWidth) / 2;
+      dy = ch - drawHeight;
     }
   }
+
+  ctx.drawImage(currentImage, dx, dy, drawWidth, drawHeight);
 }
 
 document.getElementById('imageUpload').addEventListener('change', (e) => {
@@ -122,4 +167,3 @@ document.getElementById('generateBtn').addEventListener('click', () => {
   </script>
 </body>
 </html>
-
