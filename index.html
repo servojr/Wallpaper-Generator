@@ -6,216 +6,264 @@
   <title>My Desktop Wallpaper Generator</title>
   <style>
     body {
-      font-family: sans-serif;
-      background: linear-gradient(to right, #2c0735, #803600);
-      color: #eee;
-      text-align: center;
       margin: 0;
-      padding: 2em;
+      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #3a1c71, #d76d77, #ffaf7b);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+    form {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      max-width: 600px;
+      width: 90%;
+      margin: 30px auto;
+    }
+    label, select, input, button {
+      display: block;
+      width: 100%;
+      margin: 10px 0;
+    }
+    button {
+      background: #fff;
+      color: #333;
+      font-weight: bold;
+      padding: 10px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
     }
     canvas {
+      border: 2px solid #fff;
+      margin: 20px 0;
       display: block;
-      margin: 1em auto;
-      border: 2px solid #555;
+      max-width: 100%;
     }
-    button, input, select {
-      margin: 0.5em;
-      padding: 0.5em 1em;
-    }
-    label {
-      display: block;
-      margin: 0.5em 0 0.2em;
-    }
-    #myCreations {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 1em;
-    }
-    .creation-wrapper {
-      position: relative;
-      margin: 0.5em;
-    }
-    .creation-wrapper img {
-      height: 100px;
-      cursor: pointer;
-    }
-    .delete-btn {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: red;
-      color: white;
-      border: none;
-      cursor: pointer;
+    #preview {
+      display: none;
+      max-width: 100%;
+      margin: 20px auto;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.4);
     }
   </style>
 </head>
 <body>
   <h1>🖼️ My Desktop Wallpaper Generator</h1>
-  <input type="file" id="upload" accept="image/*">
-  <br>
-  <label for="affirmationText">Affirmation Text:</label>
-  <input type="text" id="affirmationText" placeholder="Enter your affirmation">
-  <label for="affirmationPosition">Affirmation Position:</label>
-  <select id="affirmationPosition">
-    <option value="top">Top</option>
-    <option value="middle">Middle</option>
-    <option value="bottom" selected>Bottom</option>
-  </select>
-  <label for="canvasSize">Wallpaper Size:</label>
-  <select id="canvasSize">
-    <option value="1024x768">1024x768</option>
-    <option value="1920x1080">1920x1080</option>
-    <option value="3840x2160" selected>3840x2160 (4K UHD)</option>
-  </select>
-  <label for="imagePosition">Image Position:</label>
-  <select id="imagePosition">
-    <option value="top">Top</option>
-    <option value="center" selected>Center</option>
-    <option value="bottom">Bottom</option>
-  </select>
-  <div>
+  <form>
+    <label>Upload Image:</label>
+    <input type="file" id="imageUpload" accept="image/*">
+
+    <label>Affirmation Text:</label>
+    <input type="text" id="affirmationText">
+
+    <label>Affirmation Position:</label>
+    <select id="affirmationPosition">
+      <option value="top">Top</option>
+      <option value="center">Center</option>
+      <option value="bottom" selected>Bottom</option>
+    </select>
+
+    <label>Wallpaper Size:</label>
+    <select id="sizeSelect">
+      <option value="1024x768">1024×768</option>
+      <option value="1280x1024">1280×1024</option>
+      <option value="1600x1200">1600×1200</option>
+      <option value="1920x1080">1920×1080 (HD)</option>
+      <option value="2560x1440">2560×1440 (QHD)</option>
+      <option value="3840x2160">3840×2160 (4K UHD)</option>
+    </select>
+
+    <label>File Format:</label>
+    <select id="formatSelect">
+      <option value="png" selected>PNG</option>
+      <option value="jpeg">JPEG</option>
+      <option value="webp">WEBP</option>
+    </select>
+
+    <label>Image Position:</label>
+<select id="imagePosition">
+  <option value="top">Top</option>
+  <option value="center" selected>Center</option>
+  <option value="bottom">Bottom</option>
+</select>
+
+<label for="fitMode">Photo Fit Mode:</label>
+<select id="fitMode">
+  <option value="crop" selected>Crop to Fill</option>
+  <option value="fit-color">Fit with Color</option>
+  <option value="fit-blur">Fit with Blurred Background</option>
+</select>
+
+    
+<label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
+<select id="blurFillMode" style="display: none;">
+  <option value="zoom" selected>Zoom</option>
+  <option value="tile">Tile</option>
+  <option value="stretch">Stretch</option>
+</select>
+
+    <label id="fillColorLabel" style="display: none;">Background Color:</label>
+    <input type="color" id="fillColor" value="#000000" style="display: none;">
+
     <label>Optional Effects:</label>
-    <label><input type="checkbox" id="effectBW"> Black & White</label>
-    <label><input type="checkbox" id="effectBlur"> Blur</label>
-    <label><input type="checkbox" id="effectInvert"> Invert Colors</label>
-  </div>
-  <button id="createBtn">Create Wallpaper</button>
-  <button id="saveBtn">Save</button>
-  <button id="downloadLink">Download Wallpaper</button>
-  <button id="clearAllBtn">Clear All</button>
-  <canvas id="canvas" width="1920" height="1080"></canvas>
-  <div id="myCreations"></div>
+    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"><label for="desaturate">Black & White</label></div>
+    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"><label for="blur">Blur</label></div>
+    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"><label for="invert">Invert Colors</label></div>
+
+    <button type="button" id="generateBtn">Create Wallpaper</button>
+    <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
+  </form>
+
+  <img id="preview">
+  <canvas id="canvas" width="1024" height="768"></canvas>
 
   <script>
-    const canvas = document.getElementById("canvas");
-    const ctx = canvas.getContext("2d");
-    const upload = document.getElementById("upload");
-    const downloadLink = document.getElementById("downloadLink");
-    const createBtn = document.getElementById("createBtn");
-    const saveBtn = document.getElementById("saveBtn");
-    const clearAllBtn = document.getElementById("clearAllBtn");
-    const myCreations = document.getElementById("myCreations");
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const imageUpload = document.getElementById('imageUpload');
+    const affirmationText = document.getElementById('affirmationText');
+    const affirmationPosition = document.getElementById('affirmationPosition');
+    const sizeSelect = document.getElementById('sizeSelect');
+    const formatSelect = document.getElementById('formatSelect');
+    const generateBtn = document.getElementById('generateBtn');
+    const downloadLink = document.getElementById('downloadLink');
+    const preview = document.getElementById('preview');
+    const fitModeSelect = document.getElementById('fitMode');
+    const fillColorPicker = document.getElementById('fillColor');
+    const fillColorLabel = document.getElementById('fillColorLabel');
 
-    let currentImage = null;
+    fitModeSelect.addEventListener('change', () => {
+  const mode = fitModeSelect.value;
+  fillColorPicker.style.display = mode === 'fit-color' ? 'block' : 'none';
+  fillColorLabel.style.display = mode === 'fit-color' ? 'block' : 'none';
+  document.getElementById('blurFillMode').style.display = mode === 'fit-blur' ? 'block' : 'none';
+  document.getElementById('blurFillModeLabel').style.display = mode === 'fit-blur' ? 'block' : 'none';
+});
 
-    upload.addEventListener("change", (e) => {
+    imageUpload.addEventListener('change', e => {
       const file = e.target.files[0];
       if (!file) return;
+      const blobUrl = URL.createObjectURL(file);
+      preview.src = blobUrl;
+      preview.style.display = 'block';
+      preview.dataset.blob = blobUrl;
+    });
+
+    generateBtn.addEventListener('click', () => {
+      const blobUrl = preview.dataset.blob;
+      if (!blobUrl) return alert("Please upload an image first.");
+      const [w, h] = sizeSelect.value.split('x').map(Number);
+      const format = formatSelect.value;
+      const fitMode = fitModeSelect.value;
+      const fillColor = fillColorPicker.value;
+      canvas.width = w;
+      canvas.height = h;
+
       const img = new Image();
       img.onload = () => {
-        currentImage = img;
-        drawWallpaper();
+        if (fitMode === 'fit-color') {
+          ctx.fillStyle = fillColor;
+          ctx.fillRect(0, 0, w, h);
+        } else if (fitMode === 'fit-blur') {
+  const blurStyle = document.getElementById('blurFillMode').value;
+  ctx.save();
+  ctx.filter = 'blur(20px)';
+
+  if (blurStyle === 'tile') {
+    const pattern = ctx.createPattern(img, 'repeat');
+    ctx.fillStyle = pattern;
+    ctx.fillRect(0, 0, w, h);
+  } else if (blurStyle === 'stretch') {
+    ctx.drawImage(img, 0, 0, w, h);
+  } else {
+    const scale = Math.max(w / img.width, h / img.height);
+    const bgW = img.width * scale;
+    const bgH = img.height * scale;
+    const bgX = (w - bgW) / 2;
+    const bgY = (h - bgH) / 2;
+    ctx.drawImage(img, bgX, bgY, bgW, bgH);
+  }
+
+  ctx.restore();
+} else if (blurStyle === 'stretch') {
+    ctx.drawImage(img, 0, 0, w, h);
+  } else {
+    ctx.drawImage(img, 0, 0, w, h);
+    ctx.filter = 'blur(20px)';
+    ctx.drawImage(canvas, 0, 0);
+    ctx.filter = 'none';
+  }
+}
+
+        const scale = fitMode === 'crop' ? Math.max(w / img.width, h / img.height) : Math.min(w / img.width, h / img.height);
+        const imgW = img.width * scale;
+        const imgH = img.height * scale;
+        const x = (w - imgW) / 2;
+        const y = (h - imgH) / 2;
+        ctx.drawImage(img, x, y, imgW, imgH);
+
+        const desaturate = document.getElementById('desaturate').checked;
+        const blur = document.getElementById('blur').checked;
+        const invert = document.getElementById('invert').checked;
+
+        let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        let data = imageData.data;
+
+        if (desaturate) {
+          for (let i = 0; i < data.length; i += 4) {
+            const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+            data[i] = data[i+1] = data[i+2] = avg;
+          }
+        }
+
+        if (invert) {
+          for (let i = 0; i < data.length; i += 4) {
+            data[i] = 255 - data[i];
+            data[i+1] = 255 - data[i+1];
+            data[i+2] = 255 - data[i+2];
+          }
+        }
+
+        if (desaturate || invert) {
+          ctx.putImageData(imageData, 0, 0);
+        }
+
+        if (blur) {
+          ctx.filter = 'blur(2px)';
+          ctx.drawImage(canvas, 0, 0);
+          ctx.filter = 'none';
+        }
+
+        const text = affirmationText.value;
+        if (text) {
+          const pos = affirmationPosition.value;
+          const yPos = pos === 'top' ? 80 : pos === 'center' ? h / 2 : h - 60;
+          ctx.font = '48px Segoe UI';
+          ctx.fillStyle = '#fff';
+          ctx.strokeStyle = 'black';
+          ctx.lineWidth = 3;
+          ctx.textAlign = 'center';
+          ctx.strokeText(text, w / 2, yPos);
+          ctx.fillText(text, w / 2, yPos);
+        }
+
+        const dataUrl = canvas.toDataURL(`image/${format}`);
+        downloadLink.href = dataUrl;
+        downloadLink.download = `wallpaper-${Date.now()}.${format}`;
+        downloadLink.style.display = 'inline-block';
       };
-      img.src = URL.createObjectURL(file);
+      img.src = blobUrl;
     });
-
-    function drawWallpaper() {
-      const affirmationText = document.getElementById("affirmationText").value;
-      const position = document.getElementById("affirmationPosition").value;
-      const imagePos = document.getElementById("imagePosition").value;
-      const bw = document.getElementById("effectBW").checked;
-      const blur = document.getElementById("effectBlur").checked;
-      const invert = document.getElementById("effectInvert").checked;
-
-      const size = document.getElementById("canvasSize").value.split("x");
-      canvas.width = parseInt(size[0]);
-      canvas.height = parseInt(size[1]);
-
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      if (!currentImage) return;
-
-      let imgWidth = currentImage.width;
-      let imgHeight = currentImage.height;
-      const ratio = Math.min(canvas.width / imgWidth, canvas.height / imgHeight);
-      imgWidth *= ratio;
-      imgHeight *= ratio;
-      let x = (canvas.width - imgWidth) / 2;
-      let y = imagePos === "top" ? 0 : imagePos === "bottom" ? canvas.height - imgHeight : (canvas.height - imgHeight) / 2;
-
-      ctx.save();
-      if (bw || blur || invert) {
-        let f = [];
-        if (bw) f.push("grayscale(100%)");
-        if (blur) f.push("blur(2px)");
-        if (invert) f.push("invert(100%)");
-        ctx.filter = f.join(" ");
-      }
-      ctx.drawImage(currentImage, x, y, imgWidth, imgHeight);
-      ctx.restore();
-
-      if (affirmationText) {
-        ctx.fillStyle = "white";
-        ctx.font = "bold 48px sans-serif";
-        ctx.textAlign = "center";
-        const ypos = position === "top" ? 60 : position === "bottom" ? canvas.height - 40 : canvas.height / 2;
-        ctx.fillText(affirmationText, canvas.width / 2, ypos);
-      }
-    }
-
-    function updateSavedCreations() {
-      myCreations.innerHTML = "";
-      const items = JSON.parse(localStorage.getItem("savedWallpapers") || "[]");
-      items.forEach((dataUrl, index) => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "creation-wrapper";
-
-        const img = document.createElement("img");
-        img.src = dataUrl;
-        img.onclick = () => {
-          const imgObj = new Image();
-          imgObj.onload = () => {
-            ctx.drawImage(imgObj, 0, 0, canvas.width, canvas.height);
-          };
-          imgObj.src = dataUrl;
-        };
-
-        const delBtn = document.createElement("button");
-        delBtn.innerText = "❌";
-        delBtn.className = "delete-btn";
-        delBtn.onclick = () => {
-          items.splice(index, 1);
-          localStorage.setItem("savedWallpapers", JSON.stringify(items));
-          updateSavedCreations();
-        };
-
-        wrapper.appendChild(img);
-        wrapper.appendChild(delBtn);
-        myCreations.appendChild(wrapper);
-      });
-    }
-
-    saveBtn.addEventListener("click", () => {
-      const dataUrl = canvas.toDataURL("image/png");
-      const items = JSON.parse(localStorage.getItem("savedWallpapers") || "[]");
-      if (items.length >= 20) items.shift();
-      items.push(dataUrl);
-      localStorage.setItem("savedWallpapers", JSON.stringify(items));
-      updateSavedCreations();
-    });
-
-    clearAllBtn.addEventListener("click", () => {
-      localStorage.removeItem("savedWallpapers");
-      updateSavedCreations();
-    });
-
-    createBtn.addEventListener("click", drawWallpaper);
-
-    downloadLink.addEventListener("click", () => {
-      const link = document.createElement("a");
-      link.download = `wallpaper-${Date.now()}.png`;
-      link.href = canvas.toDataURL("image/png");
-      link.click();
-    });
-
-    updateSavedCreations();
   </script>
 </body>
 </html>
-
-
 
 
 
