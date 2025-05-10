@@ -311,11 +311,21 @@ function drawWallpaper() {
   // Foreground image placement
   if (currentImage) {
     if (fitMode === 'original') {
-      const imgW = currentImage.width;
-      const imgH = currentImage.height;
-      const x = userHasDragged && dragPosition.x !== null ? dragPosition.x : (w - imgW) / 2;
-      const y = userHasDragged && dragPosition.y !== null ? dragPosition.y : alignment === 'top' ? 0 : alignment === 'bottom' ? h - imgH : (h - imgH) / 2;
-      ctx.drawImage(currentImage, x, y);
+      let sourceX = 0;
+      let sourceY = 0;
+      let sourceW = Math.min(currentImage.width, w);
+      let sourceH = Math.min(currentImage.height, h);
+
+      if (alignment === 'center') {
+        sourceY = (currentImage.height - h) / 2;
+      } else if (alignment === 'bottom') {
+        sourceY = currentImage.height - h;
+      }
+      sourceY = Math.max(0, sourceY);
+      sourceX = (currentImage.width - w) / 2;
+      sourceX = Math.max(0, sourceX);
+
+      ctx.drawImage(currentImage, sourceX, sourceY, sourceW, sourceH, 0, 0, w, h);
     } else if (fitMode === 'crop') {
       const scale = Math.min(w / currentImage.width, h / currentImage.height);
       const imgW = currentImage.width * scale;
@@ -359,6 +369,7 @@ function drawWallpaper() {
 </script>
 </body>
 </html>
+
 
 
 
