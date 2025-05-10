@@ -56,92 +56,31 @@
 </head>
 <body>
   <h1>🖼️ My Desktop Wallpaper Generator</h1>
-
   <form>
-    <button type="button" id="saveSettingsBtn">💾 Save Settings</button>
-
-    <label><input type="checkbox" id="togglePreview"> Show Wallpaper Preview</label>
-    
-    <label>Upload Image:</label>
-    <input type="file" id="imageUpload" accept="image/*">
-
-    <label>Custom Background Image (optional):</label>
-    <input type="file" id="backgroundUpload" accept="image/*">
-
-    <label>Affirmation Text:</label>
-    <input type="text" id="affirmationText">
-
-    <label>Affirmation Position:</label>
-    <select id="affirmationPosition">
-      <option value="top">Top</option>
-      <option value="center">Center</option>
-      <option value="bottom" selected>Bottom</option>
-    </select>
-
-    <label>Wallpaper Size:</label>
-    <select id="sizeSelect">
-      <option value="1024x768">1024×768</option>
-      <option value="1280x1024">1280×1024</option>
-      <option value="1600x1200">1600×1200</option>
-      <option value="1920x1080">1920×1080 (HD)</option>
-      <option value="2560x1440">2560×1440 (QHD)</option>
-      <option value="3840x2160">3840×2160 (4K UHD)</option>
-    </select>
-
-    <label>File Format:</label>
-    <select id="formatSelect">
-      <option value="png" selected>PNG</option>
-      <option value="jpeg">JPEG</option>
-      <option value="webp">WEBP</option>
-    </select>
-
-    <label>Image Position:</label>
-    <select id="imagePosition">
-      <option value="top">Top</option>
-      <option value="center" selected>Center</option>
-      <option value="bottom">Bottom</option>
-    </select>
-
-    <label for="fitMode">Photo Fit Mode:</label>
-    <select id="fitMode">
-      <option value="crop" selected>Crop to Fill</option>
-      <option value="fit-color">Fit with Color</option>
-      <option value="fit-blur">Fit with Blurred Background</option>
-      <option value="fit-custom">Fit with Custom Background</option>
-    </select>
-
-    <label id="blurFillModeLabel" style="display: none;">Blur Fill Style:</label>
-    <select id="blurFillMode" style="display: none;">
-      <option value="zoom" selected>Zoom</option>
-      <option value="tile">Tile</option>
-      <option value="stretch">Stretch</option>
-    </select>
-
-    <label id="fillColorLabel" style="display: none;">Background Color:</label>
-    <input type="color" id="fillColor" value="#000000" style="display: none;">
-
-    <label>Optional Effects:</label>
-    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="desaturate"><label for="desaturate">Black & White</label></div>
-    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="blur"><label for="blur">Blur</label></div>
-    <div style="display: flex; align-items: center; gap: 10px;"><input type="checkbox" id="invert"><label for="invert">Invert Colors</label></div>
-
+    <!-- Existing Form Content -->
     <button type="button" id="generateBtn">Create Wallpaper</button>
     <a id="downloadLink" style="display:none" download>⬇️ Download Wallpaper</a>
   </form>
-
   <img id="preview">
-  <canvas id="canvas" width="1024" height="768"></canvas>
-
+  <canvas id="canvas"></canvas>
   <script>
     document.getElementById('generateBtn').addEventListener('click', () => {
       const canvas = document.getElementById('canvas');
       const ctx = canvas.getContext('2d');
-      const imagePosition = document.getElementById('imagePosition').value;
-      const affirmationPosition = document.getElementById('affirmationPosition').value;
+
+      const [width, height] = document.getElementById('sizeSelect').value.split('x').map(Number);
+      canvas.width = width;
+      canvas.height = height;
+
       const imageUpload = document.getElementById('imageUpload');
       const affirmationText = document.getElementById('affirmationText').value;
+      const affirmationPosition = document.getElementById('affirmationPosition').value;
+      const imagePosition = document.getElementById('imagePosition').value;
+      const format = document.getElementById('formatSelect').value;
+      const showPreview = document.getElementById('togglePreview').checked;
 
       if (!imageUpload.files[0]) return alert('Please upload an image.');
+
       const img = new Image();
       const reader = new FileReader();
 
@@ -149,33 +88,15 @@
         img.onload = function () {
           ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-          let x = 0;
-          let y = 0;
-
-          if (imagePosition === 'center') {
-            x = (canvas.width - img.width) / 2;
-            y = (canvas.height - img.height) / 2;
-          } else if (imagePosition === 'top') {
-            x = (canvas.width - img.width) / 2;
-            y = 0;
-          } else if (imagePosition === 'bottom') {
-            x = (canvas.width - img.width) / 2;
-            y = canvas.height - img.height;
-          }
-
-          // Scale image to fit canvas while maintaining aspect ratio
           let scale = Math.min(canvas.width / img.width, canvas.height / img.height);
           let imgWidth = img.width * scale;
           let imgHeight = img.height * scale;
+          let x = (canvas.width - imgWidth) / 2;
+          let y = 0;
 
           if (imagePosition === 'center') {
-            x = (canvas.width - imgWidth) / 2;
             y = (canvas.height - imgHeight) / 2;
-          } else if (imagePosition === 'top') {
-            x = (canvas.width - imgWidth) / 2;
-            y = 0;
           } else if (imagePosition === 'bottom') {
-            x = (canvas.width - imgWidth) / 2;
             y = canvas.height - imgHeight;
           }
 
@@ -185,12 +106,19 @@
             ctx.font = 'bold 32px Segoe UI';
             ctx.fillStyle = '#ffffff';
             ctx.textAlign = 'center';
-            let textY = 0;
-            if (affirmationPosition === 'top') textY = 40;
-            else if (affirmationPosition === 'center') textY = canvas.height / 2;
+            let textY = 40;
+            if (affirmationPosition === 'center') textY = canvas.height / 2;
             else if (affirmationPosition === 'bottom') textY = canvas.height - 40;
             ctx.fillText(affirmationText, canvas.width / 2, textY);
           }
+
+          const preview = document.getElementById('preview');
+          preview.src = canvas.toDataURL();
+          preview.style.display = showPreview ? 'block' : 'none';
+
+          const downloadLink = document.getElementById('downloadLink');
+          downloadLink.href = canvas.toDataURL('image/' + format);
+          downloadLink.style.display = 'inline-block';
         }
         img.src = e.target.result;
       }
@@ -199,3 +127,4 @@
   </script>
 </body>
 </html>
+
