@@ -197,15 +197,26 @@
     });
 
     document.getElementById('saveBtn').addEventListener('click', () => {
-      const data = canvas.toDataURL();
-      let saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
-      if (saved.length >= 20) {
-        alert("You've reached the maximum of 20 saved wallpapers. Please delete one before saving another.");
-        return;
+      try {
+        const pixel = ctx.getImageData(0, 0, 1, 1).data;
+        const isBlank = pixel.every(v => v === 0);
+        if (isBlank) {
+          alert("Please create your wallpaper first before saving.");
+          return;
+        }
+        const data = canvas.toDataURL("image/png");
+        let saved = JSON.parse(localStorage.getItem('wallpaperCreations') || '[]');
+        if (saved.length >= 20) {
+          alert("You've reached the maximum of 20 saved wallpapers. Please delete one before saving another.");
+          return;
+        }
+        saved.push(data);
+        localStorage.setItem('wallpaperCreations', JSON.stringify(saved));
+        loadCreations();
+      } catch (err) {
+        alert("Error saving creation. Please try again.");
+        console.error(err);
       }
-      saved.push(data);
-      localStorage.setItem('wallpaperCreations', JSON.stringify(saved));
-      loadCreations();
     });
 
     document.getElementById('clearAllBtn').addEventListener('click', () => {
@@ -279,6 +290,7 @@
   </script>
 </body>
 </html>
+
 
 
 
