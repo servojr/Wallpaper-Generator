@@ -1,4 +1,4 @@
-<!-- Full updated HTML with IndexedDB storage instead of localStorage -->
+<!-- Full updated HTML with IndexedDB storage (patched save logic) -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -56,6 +56,7 @@
             req.onsuccess = () => resolve();
             req.onerror = (e) => reject(e);
           };
+          countReq.onerror = (e) => reject(e);
         });
       }
 
@@ -65,7 +66,7 @@
         const req = store.getAll();
         req.onsuccess = () => {
           myCreations.innerHTML = '';
-          req.result.forEach((entry, index) => {
+          req.result.forEach((entry) => {
             const wrapper = document.createElement('div');
             wrapper.className = 'creation-wrapper';
             const img = document.createElement('img');
@@ -83,6 +84,9 @@
             wrapper.appendChild(del);
             myCreations.appendChild(wrapper);
           });
+        };
+        req.onerror = () => {
+          myCreations.innerHTML = '<p>Failed to load creations.</p>';
         };
       }
 
@@ -102,28 +106,20 @@
 
       document.getElementById('saveBtn').addEventListener('click', () => {
         try {
-          const pixel = ctx.getImageData(0, 0, 1, 1).data;
-          if (pixel.every(v => v === 0)) return alert("Create a wallpaper first.");
+          const test = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          const hasContent = test.data.some(v => v !== 0);
+          if (!hasContent) return alert("Create a wallpaper first.");
           const dataUrl = canvas.toDataURL("image/png");
-          saveToDB(dataUrl).then(loadFromDB);
+          saveToDB(dataUrl).then(loadFromDB).catch(() => alert("Save failed."));
         } catch (e) {
-          alert("Error saving wallpaper.");
+          alert("Error saving wallpaper: " + e.message);
         }
       });
 
-      // [The rest of the wallpaper logic (drawWallpaper, image upload, etc.) remains unchanged.]
-
-      openDB().then(loadFromDB);
+      openDB().then(loadFromDB).catch(err => alert("IndexedDB init failed."));
     });
   </script>
 </body>
 </html>
-
-
-
-
-
-
-
 
 
