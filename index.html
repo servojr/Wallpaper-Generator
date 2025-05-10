@@ -144,6 +144,7 @@ const ctx = canvas.getContext('2d');
 let currentImage = null;
 let backgroundImage = null;
 let dragPosition = { x: null, y: null };
+let userHasDragged = false;
 let isDragging = false;
 
 const imageUpload = document.getElementById('imageUpload');
@@ -191,6 +192,7 @@ canvas.addEventListener('mousedown', (e) => {
   isDragging = true;
   dragPosition.x = e.offsetX;
   dragPosition.y = e.offsetY;
+  userHasDragged = true;
 });
 canvas.addEventListener('mouseup', () => isDragging = false);
 canvas.addEventListener('mouseleave', () => isDragging = false);
@@ -308,8 +310,8 @@ function drawWallpaper() {
     const scale = Math.min(w / currentImage.width, h / currentImage.height);
     const imgW = currentImage.width * scale;
     const imgH = currentImage.height * scale;
-    let x = dragPosition.x !== null ? dragPosition.x : (w - imgW) / 2;
-    let y = dragPosition.y !== null ? dragPosition.y : alignment === 'top' ? 0 : alignment === 'bottom' ? h - imgH : (h - imgH) / 2;
+    let x = userHasDragged && dragPosition.x !== null ? dragPosition.x : (w - imgW) / 2;
+    let y = userHasDragged && dragPosition.y !== null ? dragPosition.y : alignment === 'top' ? 0 : alignment === 'bottom' ? h - imgH : (h - imgH) / 2;
     ctx.drawImage(currentImage, x, y, imgW, imgH);
   }
 
@@ -347,7 +349,5 @@ function drawWallpaper() {
 </script>
 </body>
 </html>
-
-
 
 
