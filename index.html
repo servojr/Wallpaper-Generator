@@ -44,6 +44,9 @@
     .sliders {
       margin-top: 1em;
       margin-bottom: 1em;
+      max-width: 90vw;
+      margin-left: auto;
+      margin-right: auto;
     }
     .sliders label, .sliders input, .sliders small {
       display: block;
@@ -135,19 +138,19 @@
       <label><input type="checkbox" id="effectInvert"> Invert Colors</label>
     </div>
 
+    <div class="sliders">
+      <label for="imageOffset">Image Vertical Position:</label>
+      <input type="range" id="imageOffset" min="0" max="100" value="50">
+      <small>Adjusts vertical placement (0 = top, 100 = bottom)</small>
+
+      <label for="imageOffsetX">Image Horizontal Position:</label>
+      <input type="range" id="imageOffsetX" min="0" max="100" value="50">
+      <small>Adjusts horizontal placement (0 = left, 100 = right)</small>
+    </div>
+
     <button type="button" id="downloadLink">⬇️ Download Wallpaper</button>
     <button type="button" id="clearAllBtn">Clear All</button>
   </form>
-
-  <div class="sliders">
-    <label for="imageOffset">Image Vertical Position:</label>
-    <input type="range" id="imageOffset" min="0" max="100" value="50">
-    <small>Adjusts vertical placement (0 = top, 100 = bottom)</small>
-
-    <label for="imageOffsetX">Image Horizontal Position:</label>
-    <input type="range" id="imageOffsetX" min="0" max="100" value="50">
-    <small>Adjusts horizontal placement (0 = left, 100 = right)</small>
-  </div>
 
   <canvas id="canvas" width="1920" height="1080"></canvas>
   <div id="myCreations"></div>
@@ -265,6 +268,7 @@
   </script>
 </body>
 </html>
+
 
 
 
