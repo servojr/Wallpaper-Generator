@@ -54,6 +54,7 @@
     .creation-wrapper img {
       height: 100px;
       cursor: pointer;
+      border: 2px solid #fff;
     }
     .delete-btn {
       position: absolute;
@@ -63,6 +64,8 @@
       color: white;
       border: none;
       cursor: pointer;
+      padding: 2px 6px;
+      font-size: 12px;
     }
     #toast {
       visibility: hidden;
@@ -116,12 +119,9 @@
       <option value="3840x2160" selected>3840x2160 (4K UHD)</option>
     </select>
 
-    <label for="imagePosition">Image Position:</label>
-    <select id="imagePosition">
-      <option value="top">Top</option>
-      <option value="center" selected>Center</option>
-      <option value="bottom">Bottom</option>
-    </select>
+    <label for="imageOffset">Image Vertical Position:</label>
+    <input type="range" id="imageOffset" min="0" max="100" value="50">
+    <small>Adjusts the vertical placement of the image (0 = top, 100 = bottom)</small>
 
     <div class="option-group">
       <label>Optional Effects:</label>
@@ -147,6 +147,7 @@
     const createBtn = document.getElementById('createBtn');
     const downloadLink = document.getElementById('downloadLink');
     const saveBtn = document.getElementById('saveBtn');
+    const myCreations = document.getElementById('myCreations');
 
     let image = new Image();
 
@@ -168,15 +169,13 @@
       canvas.width = w;
       canvas.height = h;
 
-      const imagePosition = document.getElementById('imagePosition').value;
+      const imageOffset = parseInt(document.getElementById('imageOffset').value);
       const scale = Math.max(w / image.width, h / image.height);
       const imgW = image.width * scale;
       const imgH = image.height * scale;
 
       let x = (w - imgW) / 2;
-      let y = (h - imgH) / 2;
-      if (imagePosition === 'top') y = 0;
-      else if (imagePosition === 'bottom') y = h - imgH;
+      let y = (h - imgH) * (imageOffset / 100);
 
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(image, x, y, imgW, imgH);
@@ -229,6 +228,7 @@
           if (saved.length >= 20) return showToast("Max 20 saves reached.");
           saved.push(dataURL);
           localStorage.setItem('myWallpapers', JSON.stringify(saved));
+          loadCreations();
           showToast("Wallpaper saved!");
         } catch (err) {
           showToast("Save failed. Storage full or unsupported.");
@@ -236,15 +236,46 @@
       };
     });
 
+    document.getElementById('clearAllBtn').addEventListener('click', () => {
+      localStorage.removeItem('myWallpapers');
+      myCreations.innerHTML = '';
+      showToast('All saved wallpapers cleared.');
+    });
+
+    function loadCreations() {
+      myCreations.innerHTML = '';
+      const saved = JSON.parse(localStorage.getItem('myWallpapers') || '[]');
+      saved.forEach((url, idx) => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'creation-wrapper';
+        const img = document.createElement('img');
+        img.src = url;
+        const delBtn = document.createElement('button');
+        delBtn.textContent = 'X';
+        delBtn.className = 'delete-btn';
+        delBtn.onclick = () => {
+          saved.splice(idx, 1);
+          localStorage.setItem('myWallpapers', JSON.stringify(saved));
+          loadCreations();
+        };
+        wrapper.appendChild(img);
+        wrapper.appendChild(delBtn);
+        myCreations.appendChild(wrapper);
+      });
+    }
+
     function showToast(msg) {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
       toast.className = 'show';
       setTimeout(() => toast.className = toast.className.replace('show', ''), 3000);
     }
+
+    window.onload = loadCreations;
   </script>
 </body>
 </html>
+
 
 
 
