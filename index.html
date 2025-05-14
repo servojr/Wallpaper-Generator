@@ -154,10 +154,118 @@
   <div id="toast">Please upload an image first.</div>
 
   <script>
-    // JavaScript code remains unchanged
+    const upload = document.getElementById('upload');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const downloadBtn = document.getElementById('downloadLink');
+    const clearAllBtn = document.getElementById('clearAllBtn');
+    const toast = document.getElementById('toast');
+    const affirmationText = document.getElementById('affirmationText');
+    const affirmationPosition = document.getElementById('affirmationPosition');
+
+    let img = new Image();
+    let imgSrc = null;
+
+    function showToast(msg) {
+      toast.textContent = msg;
+      toast.className = 'show';
+      setTimeout(() => toast.className = toast.className.replace('show', ''), 3000);
+    }
+
+    function drawWallpaper() {
+      if (!imgSrc) return showToast("Please upload an image first.");
+
+      const [w, h] = document.getElementById('canvasSize').value.split('x').map(Number);
+      canvas.width = w;
+      canvas.height = h;
+
+      const offsetX = parseInt(document.getElementById('imageOffsetX').value);
+      const offsetY = parseInt(document.getElementById('imageOffset').value);
+
+      const scale = Math.max(w / img.width, h / img.height);
+      const drawW = img.width * scale;
+      const drawH = img.height * scale;
+
+      const dx = (w - drawW) * (offsetX / 100);
+      const dy = (h - drawH) * (offsetY / 100);
+
+      ctx.clearRect(0, 0, w, h);
+      ctx.drawImage(img, dx, dy, drawW, drawH);
+
+      let imageData = ctx.getImageData(0, 0, w, h);
+      const data = imageData.data;
+      if (document.getElementById('effectBW').checked) {
+        for (let i = 0; i < data.length; i += 4) {
+          const avg = (data[i] + data[i+1] + data[i+2]) / 3;
+          data[i] = data[i+1] = data[i+2] = avg;
+        }
+      }
+      if (document.getElementById('effectInvert').checked) {
+        for (let i = 0; i < data.length; i += 4) {
+          data[i] = 255 - data[i];
+          data[i+1] = 255 - data[i+1];
+          data[i+2] = 255 - data[i+2];
+        }
+      }
+      ctx.putImageData(imageData, 0, 0);
+
+      if (document.getElementById('effectBlur').checked) {
+        ctx.filter = 'blur(2px)';
+        ctx.drawImage(canvas, 0, 0);
+        ctx.filter = 'none';
+      }
+
+      const text = affirmationText.value.trim();
+      if (text) {
+        ctx.font = 'bold 64px sans-serif';
+        ctx.fillStyle = 'white';
+        ctx.strokeStyle = 'black';
+        ctx.lineWidth = 3;
+        ctx.textAlign = 'center';
+        const yPos = affirmationPosition.value === 'top' ? 100 : affirmationPosition.value === 'middle' ? h / 2 : h - 100;
+        ctx.strokeText(text, w / 2, yPos);
+        ctx.fillText(text, w / 2, yPos);
+      }
+    }
+
+    upload.addEventListener('change', e => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        img.onload = drawWallpaper;
+        img.src = evt.target.result;
+        imgSrc = evt.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    document.getElementById('imageOffset').addEventListener('input', drawWallpaper);
+    document.getElementById('imageOffsetX').addEventListener('input', drawWallpaper);
+    document.getElementById('canvasSize').addEventListener('change', drawWallpaper);
+    document.getElementById('affirmationPosition').addEventListener('change', drawWallpaper);
+    document.getElementById('affirmationText').addEventListener('input', drawWallpaper);
+    ['effectBW', 'effectBlur', 'effectInvert'].forEach(id => {
+      document.getElementById(id).addEventListener('change', drawWallpaper);
+    });
+
+    downloadBtn.addEventListener('click', () => {
+      if (!imgSrc) return showToast("Please upload an image first.");
+      const link = document.createElement('a');
+      link.download = `wallpaper-${Date.now()}.png`;
+      link.href = canvas.toDataURL();
+      link.click();
+    });
+
+    clearAllBtn.addEventListener('click', () => {
+      imgSrc = null;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      document.querySelector('form').reset();
+    });
   </script>
 </body>
 </html>
+
 
 
 
