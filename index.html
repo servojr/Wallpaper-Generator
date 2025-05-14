@@ -121,7 +121,11 @@
 
     <label for="imageOffset">Image Vertical Position:</label>
     <input type="range" id="imageOffset" min="0" max="100" value="50">
-    <small>Adjusts the vertical placement of the image (0 = top, 100 = bottom)</small>
+    <small>Adjusts vertical placement (0 = top, 100 = bottom)</small>
+
+    <label for="imageOffsetX">Image Horizontal Position:</label>
+    <input type="range" id="imageOffsetX" min="0" max="100" value="50">
+    <small>Adjusts horizontal placement (0 = left, 100 = right)</small>
 
     <div class="option-group">
       <label>Optional Effects:</label>
@@ -149,6 +153,9 @@
     const saveBtn = document.getElementById('saveBtn');
     const myCreations = document.getElementById('myCreations');
 
+    const verticalSlider = document.getElementById('imageOffset');
+    const horizontalSlider = document.getElementById('imageOffsetX');
+
     let image = new Image();
 
     upload.addEventListener('change', e => {
@@ -162,20 +169,22 @@
       reader.readAsDataURL(file);
     });
 
-    createBtn.addEventListener('click', () => {
+    function drawWallpaper() {
       if (!image.src) return showToast("Please upload an image first.");
 
       const [w, h] = document.getElementById('canvasSize').value.split('x').map(Number);
       canvas.width = w;
       canvas.height = h;
 
-      const imageOffset = parseInt(document.getElementById('imageOffset').value);
+      const offsetY = parseInt(verticalSlider.value);
+      const offsetX = parseInt(horizontalSlider.value);
+
       const scale = Math.max(w / image.width, h / image.height);
       const imgW = image.width * scale;
       const imgH = image.height * scale;
 
-      let x = (w - imgW) / 2;
-      let y = (h - imgH) * (imageOffset / 100);
+      const x = (w - imgW) * (offsetX / 100);
+      const y = (h - imgH) * (offsetY / 100);
 
       ctx.clearRect(0, 0, w, h);
       ctx.drawImage(image, x, y, imgW, imgH);
@@ -221,20 +230,25 @@
       downloadLink.href = dataURL;
       downloadLink.download = `wallpaper-${Date.now()}.jpg`;
       downloadLink.style.display = 'inline-block';
+    }
 
-      saveBtn.onclick = () => {
-        try {
-          const saved = JSON.parse(localStorage.getItem('myWallpapers') || '[]');
-          if (saved.length >= 20) return showToast("Max 20 saves reached.");
-          saved.push(dataURL);
-          localStorage.setItem('myWallpapers', JSON.stringify(saved));
-          loadCreations();
-          showToast("Wallpaper saved!");
-        } catch (err) {
-          showToast("Save failed. Storage full or unsupported.");
-        }
-      };
-    });
+    verticalSlider.addEventListener('input', drawWallpaper);
+    horizontalSlider.addEventListener('input', drawWallpaper);
+
+    createBtn.addEventListener('click', drawWallpaper);
+
+    saveBtn.onclick = () => {
+      try {
+        const saved = JSON.parse(localStorage.getItem('myWallpapers') || '[]');
+        if (saved.length >= 20) return showToast("Max 20 saves reached.");
+        saved.push(canvas.toDataURL('image/jpeg', 0.5));
+        localStorage.setItem('myWallpapers', JSON.stringify(saved));
+        loadCreations();
+        showToast("Wallpaper saved!");
+      } catch (err) {
+        showToast("Save failed. Storage full or unsupported.");
+      }
+    };
 
     document.getElementById('clearAllBtn').addEventListener('click', () => {
       localStorage.removeItem('myWallpapers');
@@ -275,6 +289,7 @@
   </script>
 </body>
 </html>
+
 
 
 
