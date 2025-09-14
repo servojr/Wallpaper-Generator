@@ -1,278 +1,545 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>My Desktop Wallpaper Generator</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      background: linear-gradient(to right, #2c0735, #803600);
-      color: #eee;
-      text-align: center;
-      margin: 0;
-      padding: 2em;
-    }
-    form {
-      display: inline-block;
-      text-align: left;
-      background: rgba(255, 255, 255, 0.05);
-      padding: 20px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-    canvas {
-      display: block;
-      margin: 1em auto;
-      border: 2px solid #555;
-      max-width: 90vw;
-      max-height: 60vh;
-    }
-    button, input, select {
-      margin: 0.5em 0;
-      padding: 0.5em;
-      width: 100%;
-      box-sizing: border-box;
-    }
-    label {
-      display: block;
-      margin: 0.5em 0 0.2em;
-    }
-    .option-group {
-      margin-bottom: 1em;
-    }
-    .sliders {
-      margin-top: 1em;
-      margin-bottom: 1em;
-      max-width: 90vw;
-      margin-left: auto;
-      margin-right: auto;
-    }
-    .sliders label, .sliders input, .sliders small {
-      display: block;
-      width: 100%;
-      text-align: left;
-    }
-    #myCreations {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      margin-top: 1em;
-    }
-    .creation-wrapper {
-      position: relative;
-      margin: 0.5em;
-    }
-    .creation-wrapper img {
-      height: 100px;
-      cursor: pointer;
-      border: 2px solid #fff;
-    }
-    .delete-btn {
-      position: absolute;
-      top: 2px;
-      right: 2px;
-      background: red;
-      color: white;
-      border: none;
-      cursor: pointer;
-      padding: 2px 6px;
-      font-size: 12px;
-    }
-    #toast {
-      visibility: hidden;
-      min-width: 250px;
-      background-color: #333;
-      color: #fff;
-      text-align: center;
-      border-radius: 8px;
-      padding: 12px;
-      position: fixed;
-      z-index: 1;
-      left: 50%;
-      bottom: 30px;
-      transform: translateX(-50%);
-      font-size: 16px;
-    }
-    #toast.show {
-      visibility: visible;
-      animation: fadein 0.5s, fadeout 0.5s 2.5s;
-    }
-    @keyframes fadein {
-      from {bottom: 0; opacity: 0;}
-      to {bottom: 30px; opacity: 1;}
-    }
-    @keyframes fadeout {
-      from {bottom: 30px; opacity: 1;}
-      to {bottom: 0; opacity: 0;}
-    }
-  </style>
-</head>
-<body>
-  <h1>🖼️ My Desktop Wallpaper Generator</h1>
-  <form>
-    <label for="upload">Upload Image:</label>
-    <input type="file" id="upload" accept="image/*">
+# Project: Wallpaper Generator (Next.js + Tailwind)
+# Ready-to-deploy template for Vercel
+# -------------------------------------------------
+# Instructions
+# 1) Create a new folder and copy this file structure into it.
+# 2) Save each code block to the matching file path.
+# 3) Run `npm install` then `npm run dev` locally to test.
+# 4) Push to GitHub and import into Vercel, or use `vercel` CLI.
+# -------------------------------------------------
 
-    <label for="affirmationText">Affirmation Text:</label>
-    <input type="text" id="affirmationText" placeholder="Enter your affirmation">
+# FILE: package.json
+{
+  "name": "wallpaper-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@radix-ui/react-label": "^2.0.2",
+    "@radix-ui/react-slider": "^1.1.2",
+    "@radix-ui/react-switch": "^1.0.3",
+    "@radix-ui/react-tabs": "^1.0.4",
+    "autoprefixer": "^10.4.20",
+    "class-variance-authority": "^0.7.0",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.462.0",
+    "next": "14.2.5",
+    "postcss": "^8.4.47",
+    "react": "18.3.1",
+    "react-dom": "18.3.1",
+    "tailwind-merge": "^2.5.2",
+    "tailwindcss": "^3.4.10",
+    "typescript": "^5.5.4"
+  }
+}
 
-    <label for="affirmationPosition">Affirmation Position:</label>
-    <select id="affirmationPosition">
-      <option value="top">Top</option>
-      <option value="middle">Middle</option>
-      <option value="bottom" selected>Bottom</option>
-    </select>
+# FILE: next.config.mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  experimental: { appDir: true }
+};
+export default nextConfig;
 
-    <label for="canvasSize">Wallpaper Size:</label>
-    <select id="canvasSize">
-      <option value="1024x768">1024x768</option>
-      <option value="1920x1080">1920x1080</option>
-      <option value="3840x2160" selected>3840x2160 (4K UHD)</option>
-    </select>
+# FILE: tsconfig.json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["dom", "dom.iterable", "es2021"],
+    "allowJs": false,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "baseUrl": ".",
+    "paths": { "@/components/*": ["components/*"] }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["node_modules"]
+}
 
-    <div class="option-group">
-      <label>Optional Effects:</label>
-      <label><input type="checkbox" id="effectBW"> Black & White</label>
-      <label><input type="checkbox" id="effectBlur"> Blur</label>
-      <label><input type="checkbox" id="effectInvert"> Invert Colors</label>
+# FILE: postcss.config.js
+module.exports = {
+  plugins: {
+    tailwindcss: {},
+    autoprefixer: {},
+  },
+};
+
+# FILE: tailwind.config.ts
+import type { Config } from "tailwindcss";
+
+export default {
+  darkMode: ["class"],
+  content: [
+    "./pages/**/*.{ts,tsx}",
+    "./components/**/*.{ts,tsx}",
+    "./app/**/*.{ts,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        background: "hsl(0 0% 100%)",
+        foreground: "hsl(240 10% 3.9%)",
+        muted: "hsl(240 4.8% 95.9%)",
+      },
+      borderRadius: {
+        xl: "1rem",
+        "2xl": "1.25rem",
+      },
+    },
+  },
+  plugins: [],
+} satisfies Config;
+
+# FILE: app/globals.css
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html, body, #__next { height: 100%; }
+body { @apply bg-white text-neutral-900; }
+
+# FILE: app/layout.tsx
+export const metadata = {
+  title: "Wallpaper Generator",
+  description: "Create custom wallpapers with affirmations and effects.",
+};
+
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <html lang="en">
+      <body className="min-h-screen antialiased">
+        <div className="max-w-6xl mx-auto p-4 sm:p-8">{children}</div>
+      </body>
+    </html>
+  );
+}
+
+# FILE: app/page.tsx
+"use client";
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import BeforeAfterPreview from "@/components/BeforeAfterPreview";
+
+export default function Page() {
+  const [orig, setOrig] = useState<File | null>(null);
+  const [edit, setEdit] = useState<File | null>(null);
+  const [affirm, setAffirm] = useState("I am grounded and capable.");
+
+  return (
+    <div className="space-y-6">
+      <header className="flex items-center justify-between">
+        <h1 className="text-2xl sm:text-3xl font-bold">Wallpaper Generator</h1>
+        <a
+          href="https://wallpaper-generator-drab.vercel.app/"
+          target="_blank"
+          className="text-sm underline"
+        >Live Demo</a>
+      </header>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Upload</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label>Original image</Label>
+            <Input type="file" accept="image/*" onChange={(e) => setOrig(e.target.files?.[0] || null)} />
+          </div>
+          <div>
+            <Label>Edited image</Label>
+            <Input type="file" accept="image/*" onChange={(e) => setEdit(e.target.files?.[0] || null)} />
+          </div>
+          <div className="sm:col-span-2">
+            <Label>Affirmation (for future text overlay feature)</Label>
+            <Input value={affirm} onChange={(e) => setAffirm(e.target.value)} />
+          </div>
+        </CardContent>
+      </Card>
+
+      <BeforeAfterPreview original={orig || undefined} edited={edit || undefined} />
+
+      <div className="text-xs text-neutral-500">© 2025 Alex Campbell — Companionish AI Solutions</div>
     </div>
+  );
+}
 
-    <div class="sliders">
-      <label for="imageOffset">Image Vertical Position:</label>
-      <input type="range" id="imageOffset" min="0" max="100" value="50">
-      <small>Adjusts vertical placement (0 = top, 100 = bottom)</small>
+# FILE: components/BeforeAfterPreview.tsx
+"use client";
+/**
+ * Wallpaper Generator Before/After Preview
+ * Created by Alex Campbell, 2025
+ * Companionish AI Solutions
+ */
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Input } from "@/components/ui/input";
+import { RefreshCcw, Columns2, Rows } from "lucide-react";
 
-      <label for="imageOffsetX">Image Horizontal Position:</label>
-      <input type="range" id="imageOffsetX" min="0" max="100" value="50">
-      <small>Adjusts horizontal placement (0 = left, 100 = right)</small>
+function srcFrom(input?: string | File | Blob | null) {
+  if (!input) return "";
+  if (typeof input === "string") return input;
+  return URL.createObjectURL(input);
+}
+
+export default function BeforeAfterPreview({
+  original,
+  edited,
+  height = 520,
+  checker = true,
+  defaultLayout = "stack",
+  enableCompareSlider = true,
+}: {
+  original?: string | File | Blob | null,
+  edited?: string | File | Blob | null,
+  height?: number,
+  checker?: boolean,
+  defaultLayout?: "stack" | "side";
+  enableCompareSlider?: boolean;
+}) {
+  const [layout, setLayout] = useState<"stack" | "side">(defaultLayout);
+  const [fitMode, setFitMode] = useState<"contain" | "cover">("contain");
+  const [zoom, setZoom] = useState(1);
+  const [compare, setCompare] = useState(50);
+  const [showCompare, setShowCompare] = useState(enableCompareSlider);
+  const [spacePanning, setSpacePanning] = useState(false);
+  const [pan, setPan] = useState({ x: 0, y: 0 });
+  const wrapRef = useRef<HTMLDivElement | null>(null);
+  const isStack = layout === "stack";
+
+  const originalSrc = useMemo(() => srcFrom(original), [original]);
+  const editedSrc = useMemo(() => srcFrom(edited), [edited]);
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.code === "Space") { e.preventDefault(); setSpacePanning(true); }
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "0") { setZoom(1); setPan({ x: 0, y: 0 }); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "=") { setZoom((z) => Math.min(5, +(z + 0.1).toFixed(2))); }
+      if ((e.ctrlKey || e.metaKey) && e.key === "-") { setZoom((z) => Math.max(0.2, +(z - 0.1).toFixed(2))); }
+      if (e.key.toLowerCase() === "s") setShowCompare((v) => !v);
+      if (e.key.toLowerCase() === "l") setLayout((p) => (p === "stack" ? "side" : "stack"));
+    };
+    const onKeyUp = (e: KeyboardEvent) => { if (e.code === "Space") setSpacePanning(false); };
+    window.addEventListener("keydown", onKeyDown);
+    window.addEventListener("keyup", onKeyUp);
+    return () => { window.removeEventListener("keydown", onKeyDown); window.removeEventListener("keyup", onKeyUp); };
+  }, []);
+
+  useEffect(() => {
+    const el = wrapRef.current; if (!el) return;
+    const onWheel = (e: WheelEvent) => {
+      if (e.ctrlKey) {
+        e.preventDefault();
+        const rect = el.getBoundingClientRect();
+        const delta = -e.deltaY * 0.0015;
+        setZoom((z) => {
+          const nz = Math.min(5, Math.max(0.2, +(z + delta).toFixed(3)));
+          const cx = e.clientX - rect.left - rect.width / 2;
+          const cy = e.clientY - rect.top - rect.height / 2;
+          setPan((p) => ({ x: p.x - cx * (nz - z) * 0.08, y: p.y - cy * (nz - z) * 0.08 }));
+          return nz;
+        });
+      }
+    };
+    el.addEventListener("wheel", onWheel, { passive: false });
+    return () => el.removeEventListener("wheel", onWheel as any);
+  }, []);
+
+  const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    if (!spacePanning) return;
+    const start = { x: e.clientX, y: e.clientY };
+    const startPan = { ...pan };
+    const onMove = (ev: PointerEvent) => setPan({ x: startPan.x + (ev.clientX - start.x), y: startPan.y + (ev.clientY - start.y) });
+    const onUp = () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp, { once: true });
+  };
+
+  const frameBase = "relative overflow-hidden rounded-2xl shadow-sm border select-none";
+  const checkerBg = checker
+    ? "bg-[linear-gradient(45deg,_#f0f0f0_25%,_transparent_25%),linear-gradient(-45deg,_#f0f0f0_25%,_transparent_25%),linear-gradient(45deg,_transparent_75%,_#f0f0f0_75%),linear-gradient(-45deg,_transparent_75%,_#f0f0f0_75%)] bg-[length:20px_20px] bg-[position:0_0,0_10px,10px_-10px,-10px_0px]"
+    : "bg-muted";
+
+  const Img = ({ src, alt }: { src?: string; alt: string }) => (
+    <img
+      src={src || ""}
+      alt={alt}
+      className="pointer-events-none max-w-none"
+      style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`, transformOrigin: "center", objectFit: fitMode, width: "100%", height: "100%" }}
+      draggable={false}
+    />
+  );
+
+  const Frame = ({ label, src }: { label: string; src?: string }) => (
+    <Card className={`${frameBase} ${checkerBg}`} style={{ height }}>
+      <CardHeader className="py-3 px-4">
+        <CardTitle className="text-sm font-medium flex items-center gap-2">
+          <span className="inline-flex h-2.5 w-2.5 rounded-full bg-foreground/70" />{label}
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="p-0">
+        <div ref={wrapRef} className="w-full h-[calc(100%-0px)]" onPointerDown={onPointerDown} style={{ cursor: spacePanning ? "grab" : "default" }}>
+          {src ? <div className="w-full h-[calc(100%-0px)]"><Img src={src} alt={label} /></div> : <div className="w-full h-full grid place-items-center text-sm text-neutral-500">No image</div>}
+        </div>
+      </CardContent>
+    </Card>
+  );
+
+  return (
+    <div className="w-full space-y-4">
+      {/* Hidden proof of authorship */}
+      <div data-wallpaper-generator="Created by Alex Campbell, Companionish AI Solutions, 2025" style={{ display: "none" }} />
+
+      {/* Controls */}
+      <Card className="border shadow-sm">
+        <CardContent className="p-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="flex items-center justify-between gap-3">
+            <Label className="text-xs">Layout</Label>
+            <div className="flex gap-2">
+              <Button variant={layout === "stack" ? "default" : "outline"} size="sm" onClick={() => setLayout("stack")} className="gap-1"><Rows className="h-4 w-4"/>Stack</Button>
+              <Button variant={layout === "side" ? "default" : "outline"} size="sm" onClick={() => setLayout("side")} className="gap-1"><Columns2 className="h-4 w-4"/>Side</Button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <Label className="text-xs">Fit</Label>
+            <div className="flex gap-2">
+              <Button variant={fitMode === "contain" ? "default" : "outline"} size="sm" onClick={() => setFitMode("contain")}>Contain</Button>
+              <Button variant={fitMode === "cover" ? "default" : "outline"} size="sm" onClick={() => setFitMode("cover")}>Cover</Button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <Label className="text-xs">Zoom ({(zoom * 100).toFixed(0)}%)</Label>
+            <div className="flex-1 max-w-[220px]"><Slider value={[zoom]} min={0.2} max={5} step={0.01} onValueChange={(v) => setZoom(v[0])} /></div>
+            <Button variant="outline" size="sm" className="ml-2" onClick={() => { setZoom(1); setPan({x:0,y:0}); }}><RefreshCcw className="h-4 w-4"/></Button>
+          </div>
+          <div className="flex items-center justify-between gap-3">
+            <Label className="text-xs">Compare Slider</Label>
+            <div className="flex items-center gap-2">
+              <Switch checked={showCompare} onCheckedChange={setShowCompare} />
+              <Input className="w-20 h-8" type="number" min={0} max={100} value={compare} onChange={(e) => setCompare(Math.max(0, Math.min(100, Number(e.target.value) || 0)))} />
+              <span className="text-xs text-neutral-500">{compare}%</span>
+            </div>
+          </div>
+          <div className="sm:col-span-2 lg:col-span-4 text-xs text-neutral-500">
+            Shortcuts: Ctrl/Cmd + Scroll to zoom • Space to pan • S toggle compare • L toggle layout • Ctrl/Cmd+0 reset.
+          </div>
+        </CardContent>
+      </Card>
+
+      {isStack ? (
+        <div className="grid gap-4">
+          <Frame label="Original (Top)" src={originalSrc} />
+          <div className="relative">
+            <Frame label="Edited (Bottom)" src={editedSrc} />
+            {showCompare && (
+              <CompareOverlay compare={compare} height={height} original={originalSrc} edited={editedSrc} fitMode={fitMode} pan={pan} zoom={zoom} checkerBg={checkerBg} />
+            )}
+          </div>
+        </div>
+      ) : (
+        <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
+          <Frame label="Original (Left)" src={originalSrc} />
+          <div className="relative">
+            <Frame label="Edited (Right)" src={editedSrc} />
+            {showCompare && (
+              <CompareOverlay compare={compare} height={height} original={originalSrc} edited={editedSrc} fitMode={fitMode} pan={pan} zoom={zoom} checkerBg={checkerBg} sideBySide />
+            )}
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
 
-    <button type="button" id="downloadLink">⬇️ Download Wallpaper</button>
-    <button type="button" id="clearAllBtn">Clear All</button>
-  </form>
+function CompareOverlay({
+  compare,
+  height,
+  original,
+  edited,
+  fitMode,
+  pan,
+  zoom,
+  checkerBg,
+  sideBySide = false,
+}: {
+  compare: number;
+  height: number;
+  original?: string;
+  edited?: string;
+  fitMode: "contain" | "cover";
+  pan: { x: number; y: number };
+  zoom: number;
+  checkerBg: string;
+  sideBySide?: boolean;
+}) {
+  const [pct, setPct] = useState(compare);
+  useEffect(() => setPct(compare), [compare]);
+  const overlayRef = useRef<HTMLDivElement | null>(null);
+  const onPointerDown: React.PointerEventHandler<HTMLDivElement> = (e) => {
+    const el = overlayRef.current; if (!el) return;
+    const rect = el.getBoundingClientRect();
+    const start = { x: e.clientX, y: e.clientY };
+    const getPct = (ev: PointerEvent) => {
+      const rel = sideBySide ? (ev.clientX - rect.left) / rect.width : (ev.clientY - rect.top) / rect.height;
+      return Math.min(Math.max(rel, 0), 1) * 100;
+    };
+    const onMove = (ev: PointerEvent) => setPct(getPct(ev));
+    const onUp = () => { window.removeEventListener("pointermove", onMove); window.removeEventListener("pointerup", onUp); };
+    window.addEventListener("pointermove", onMove);
+    window.addEventListener("pointerup", onUp, { once: true });
+  };
+  const transform = `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`;
+  return (
+    <div ref={overlayRef} className={`absolute inset-0 ${checkerBg} rounded-2xl overflow-hidden border`} style={{ height }} onPointerDown={onPointerDown}>
+      {edited && (<img src={edited} alt="Edited" className="absolute inset-0 max-w-none w-full h-full pointer-events-none" style={{ objectFit: fitMode, transform, transformOrigin: "center" }} draggable={false} />)}
+      {original && (
+        <div className="absolute inset-0 overflow-hidden" style={sideBySide ? { width: `${pct}%` } : { height: `${pct}%` }}>
+          <img src={original} alt="Original" className="absolute inset-0 max-w-none w-full h-full pointer-events-none" style={{ objectFit: fitMode, transform, transformOrigin: "center" }} draggable={false} />
+        </div>
+      )}
+      <div className="absolute bg-black/70 text-white flex items-center justify-center" style={sideBySide ? { top: 0, bottom: 0, left: `${pct}%`, width: 2 } : { left: 0, right: 0, top: `${pct}%`, height: 2 }}>
+        <div className="absolute -translate-x-1/2 -translate-y-1/2 px-2 py-1 rounded-full text-xs border bg-white text-black shadow">{Math.round(pct)}%</div>
+      </div>
+    </div>
+  );
+}
 
-  <canvas id="canvas" width="1920" height="1080"></canvas>
-  <div id="myCreations"></div>
-  <div id="toast">Please upload an image first.</div>
-
-  <script>
-    const upload = document.getElementById('upload');
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const downloadBtn = document.getElementById('downloadLink');
-    const clearAllBtn = document.getElementById('clearAllBtn');
-    const toast = document.getElementById('toast');
-    const affirmationText = document.getElementById('affirmationText');
-    const affirmationPosition = document.getElementById('affirmationPosition');
-
-    let img = new Image();
-    let imgSrc = null;
-
-    function showToast(msg) {
-      toast.textContent = msg;
-      toast.className = 'show';
-      setTimeout(() => toast.className = toast.className.replace('show', ''), 3000);
+// Fancy console banner + Easter egg
+if (typeof window !== "undefined") {
+  const banner = `\n%c██████╗ ██████╗  ██████╗  ██████╗ ██╗   ██╗███████╗\n%c██╔══██╗██╔══██╗██╔═══██╗██╔═══██╗██║   ██║██╔════╝\n%c██████╔╝██████╔╝██║   ██║██║   ██║██║   ██║█████╗  \n%c██╔═══╝ ██╔══██╗██║   ██║██║   ██║╚██╗ ██╔╝██╔══╝  \n%c██║     ██║  ██║╚██████╔╝╚██████╔╝ ╚████╔╝ ███████╗\n%c╚═╝     ╚═╝  ╚═╝ ╚═════╝  ╚═════╝   ╚═══╝  ╚══════╝\n`;
+  console.log(banner,
+    "color:#4ade80;font-weight:bold;",
+    "color:#22d3ee;font-weight:bold;",
+    "color:#a855f7;font-weight:bold;",
+    "color:#facc15;font-weight:bold;",
+    "color:#f87171;font-weight:bold;",
+    "color:#94a3b8;font-weight:bold;",
+  );
+  console.log("%cCreated by Alex Campbell — Companionish AI Solutions (2025)", "color:#10b981; font-size:14px; font-weight:bold; background:#f0fdf4; padding:4px 8px; border-radius:4px;");
+  ;(window as any).wallpaper = {
+    info: () => {
+      console.log("%c🎨 Wallpaper Generator Before/After Preview", "color:#3b82f6; font-weight:bold; font-size:13px;");
+      console.log("Created by Alex Campbell — Companionish AI Solutions (2025)");
+      console.log("Version: 1.0.0");
+      console.log("Tip: Use Ctrl+Scroll to zoom, Space to pan, S to toggle compare, L to toggle layout.");
+      console.log("💡 Have ideas or suggestions? %ccompanionishaisolutions@gmail.com", "color:#2563eb; text-decoration:underline; cursor:pointer;");
+      console.log("🌐 Live Demo: %chttps://wallpaper-generator-drab.vercel.app/", "color:#16a34a; text-decoration:underline; cursor:pointer;");
+      console.log("✨ Made with ❤️ by Companionish AI Solutions");
+      return "✔️ Info logged above.";
     }
+  };
+}
 
-    function drawWallpaper() {
-      if (!imgSrc) return showToast("Please upload an image first.");
+# FILE: components/ui/button.tsx
+import * as React from "react";
+import { cn } from "../utils";
 
-      const [w, h] = document.getElementById('canvasSize').value.split('x').map(Number);
-      canvas.width = w;
-      canvas.height = h;
+type Props = React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: "default" | "outline"; size?: "sm" | "md" };
+export function Button({ className, variant = "default", size = "md", ...props }: Props) {
+  const base = "inline-flex items-center justify-center rounded-2xl border text-sm font-medium transition-all disabled:opacity-50 disabled:pointer-events-none gap-1";
+  const styles = variant === "outline" ? "border-gray-300 bg-white hover:bg-gray-50" : "border-transparent bg-black text-white hover:bg-gray-800";
+  const sizes = size === "sm" ? "h-8 px-3" : "h-10 px-4";
+  return <button className={cn(base, styles, sizes, className)} {...props} />;
+}
+export default Button;
 
-      const offsetX = parseInt(document.getElementById('imageOffsetX').value);
-      const offsetY = parseInt(document.getElementById('imageOffset').value);
+# FILE: components/ui/card.tsx
+import * as React from "react";
+import { cn } from "../utils";
+export function Card({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) { return <div className={cn("rounded-2xl border bg-white", className)} {...props} />; }
+export function CardHeader({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) { return <div className={cn("p-4 border-b", className)} {...props} />; }
+export function CardTitle({ className, ...props }: React.HTMLAttributes<HTMLHeadingElement>) { return <h2 className={cn("font-semibold", className)} {...props} />; }
+export function CardContent({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) { return <div className={cn("p-4", className)} {...props} />; }
+export default Card;
 
-      const scale = Math.max(w / img.width, h / img.height);
-      const drawW = img.width * scale;
-      const drawH = img.height * scale;
+# FILE: components/ui/input.tsx
+import * as React from "react";
+import { cn } from "../utils";
+export const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLInputElement>>(function Input({ className, ...props }, ref) {
+  return <input ref={ref} className={cn("h-10 w-full rounded-xl border px-3 text-sm outline-none focus:ring-2 focus:ring-black/20", className)} {...props} />;
+});
+export default Input;
 
-      const dx = (w - drawW) * (offsetX / 100);
-      const dy = (h - drawH) * (offsetY / 100);
+# FILE: components/ui/label.tsx
+import * as React from "react";
+import * as RadixLabel from "@radix-ui/react-label";
+import { cn } from "../utils";
+export function Label({ className, ...props }: RadixLabel.LabelProps) { return <RadixLabel.Root className={cn("text-sm font-medium", className)} {...props} />; }
+export default Label;
 
-      ctx.clearRect(0, 0, w, h);
-      ctx.drawImage(img, dx, dy, drawW, drawH);
+# FILE: components/ui/slider.tsx
+import * as React from "react";
+import * as RadixSlider from "@radix-ui/react-slider";
+import { cn } from "../utils";
+export function Slider({ className, value, onValueChange, min = 0, max = 100, step = 1 }: { className?: string; value: number[]; onValueChange: (v: number[]) => void; min?: number; max?: number; step?: number; }) {
+  return (
+    <RadixSlider.Root className={cn("relative flex w-full touch-none select-none items-center", className)} value={value} onValueChange={onValueChange} min={min} max={max} step={step}>
+      <RadixSlider.Track className="relative h-1 w-full grow overflow-hidden rounded-full bg-gray-200">
+        <RadixSlider.Range className="absolute h-full bg-black" />
+      </RadixSlider.Track>
+      <RadixSlider.Thumb className="block h-4 w-4 rounded-full border border-black bg-white shadow" aria-label="Slider thumb" />
+    </RadixSlider.Root>
+  );
+}
+export default Slider;
 
-      let imageData = ctx.getImageData(0, 0, w, h);
-      const data = imageData.data;
-      if (document.getElementById('effectBW').checked) {
-        for (let i = 0; i < data.length; i += 4) {
-          const avg = (data[i] + data[i+1] + data[i+2]) / 3;
-          data[i] = data[i+1] = data[i+2] = avg;
-        }
-      }
-      if (document.getElementById('effectInvert').checked) {
-        for (let i = 0; i < data.length; i += 4) {
-          data[i] = 255 - data[i];
-          data[i+1] = 255 - data[i+1];
-          data[i+2] = 255 - data[i+2];
-        }
-      }
-      ctx.putImageData(imageData, 0, 0);
+# FILE: components/ui/switch.tsx
+import * as React from "react";
+import * as RadixSwitch from "@radix-ui/react-switch";
+export function Switch({ checked, onCheckedChange }: { checked?: boolean; onCheckedChange?: (v: boolean) => void }) {
+  return (
+    <RadixSwitch.Root checked={checked} onCheckedChange={onCheckedChange} className="h-6 w-10 rounded-full bg-gray-300 data-[state=checked]:bg-black relative transition-colors">
+      <RadixSwitch.Thumb className="block h-5 w-5 translate-x-0.5 rounded-full bg-white transition-transform data-[state=checked]:translate-x-[18px]" />
+    </RadixSwitch.Root>
+  );
+}
+export default Switch;
 
-      if (document.getElementById('effectBlur').checked) {
-        ctx.filter = 'blur(2px)';
-        ctx.drawImage(canvas, 0, 0);
-        ctx.filter = 'none';
-      }
+# FILE: components/ui/utils.ts
+import { type ClassValue, clsx } from "clsx";
+import { twMerge } from "tailwind-merge";
+export function cn(...inputs: ClassValue[]) { return twMerge(clsx(inputs)); }
 
-      const text = affirmationText.value.trim();
-      if (text) {
-        ctx.font = 'bold 64px sans-serif';
-        ctx.fillStyle = 'white';
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 3;
-        ctx.textAlign = 'center';
-        const yPos = affirmationPosition.value === 'top' ? 100 : affirmationPosition.value === 'middle' ? h / 2 : h - 100;
-        ctx.strokeText(text, w / 2, yPos);
-        ctx.fillText(text, w / 2, yPos);
-      }
-    }
+# FILE: public/favicon.ico
+# (optional) Add any ico here.
 
-    upload.addEventListener('change', e => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = function(evt) {
-        img.onload = drawWallpaper;
-        img.src = evt.target.result;
-        imgSrc = evt.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
+# FILE: README.md
+# Wallpaper Generator — Next.js + Tailwind (Ready for Vercel)
 
-    document.getElementById('imageOffset').addEventListener('input', drawWallpaper);
-    document.getElementById('imageOffsetX').addEventListener('input', drawWallpaper);
-    document.getElementById('canvasSize').addEventListener('change', drawWallpaper);
-    document.getElementById('affirmationPosition').addEventListener('change', drawWallpaper);
-    document.getElementById('affirmationText').addEventListener('input', drawWallpaper);
-    ['effectBW', 'effectBlur', 'effectInvert'].forEach(id => {
-      document.getElementById(id).addEventListener('change', drawWallpaper);
-    });
+## Quick Start
+```bash
+npm install
+npm run dev
+```
+Open http://localhost:3000
 
-    downloadBtn.addEventListener('click', () => {
-      if (!imgSrc) return showToast("Please upload an image first.");
-      const link = document.createElement('a');
-      link.download = `wallpaper-${Date.now()}.png`;
-      link.href = canvas.toDataURL();
-      link.click();
-    });
+## Deploy to Vercel
+- Push this repo to GitHub
+- Go to Vercel → New Project → Import
+- Framework preset: **Next.js**
+- No special env vars needed
+- Deploy
 
-    clearAllBtn.addEventListener('click', () => {
-      imgSrc = null;
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      document.querySelector('form').reset();
-    });
-  </script>
-</body>
-</html>
-
-
-
-
-
-
-
-
+## Notes
+- Before/After component includes authorship proof: code header, hidden DOM attribute, console banner, and `wallpaper.info()` Easter egg with email and live demo link.
+- UI is minimal (Tailwind + tiny components) to avoid heavy setup.
+- You can later add image effects, text overlays, preset saving, etc.
